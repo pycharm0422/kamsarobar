@@ -196,7 +196,7 @@ textarea { resize: vertical; }
 /* Donations */
 .bank-details { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 12px 0 16px; }
 .bank-details dt { color: var(--muted); font-size: 0.9rem; }
-.bank-details dd { margin: 0; font-weight: 600; word-break: break-all; }
+.bank-details dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
 .quick-amounts { display: flex; gap: 6px; flex-wrap: wrap; }
 .chip-btn { border: 1px solid var(--border); background: #fff; border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; font-weight: 600; }
 .chip-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
