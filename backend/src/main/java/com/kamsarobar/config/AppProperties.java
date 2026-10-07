@@ -1,0 +1,21 @@
+package com.kamsarobar.config;
+
+import java.util.List;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+@ConfigurationProperties(prefix = "app")
+public record AppProperties(Jwt jwt, Cors cors, BootstrapAdmin bootstrapAdmin, Phone phone) {
+
+    public record Jwt(String secret, long expirationMinutes) {
+    }
+
+    public record Cors(List<String> allowedOrigins) {
+    }
+
+    public record BootstrapAdmin(String name, String mobile, String password, String city) {
+    }
+
+    public record Phone(String defaultCountryCode) {
+    }
+}
