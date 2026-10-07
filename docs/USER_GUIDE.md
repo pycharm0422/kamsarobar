@@ -151,7 +151,29 @@ Only verified donations count towards the totals shown to everyone.
 
 **Admin → Causes** lets you start a fundraising cause, such as a *Winter blankets drive*, with an optional goal amount. Members can choose the cause when they donate, and a progress bar shows how much has been raised. Click **Close** when the cause is finished.
 
-### 2.4 Moderation
+### 2.4 Members of your city
+
+**Admin → Members** lists everyone living in your city. You can search by name or mobile, and filter by *Active* or *Blocked*. Tap a name to open the member's page:
+
+- **Basic details** with **WhatsApp** and **Call** buttons.
+- **Work profile:** position and company, experience, LinkedIn, bio, the companies they can refer to, and their expertise.
+- **Activity:** posts, comments, events added, donations, and the verified amount donated.
+
+<img src="screenshots/mobile/20-member-profile.png" width="300" alt="Member profile for admins">
+
+**Blocking.** Use it for spam, fake accounts or abuse. On the member's page, write a reason and tap **Block member**. The member:
+
+- is **logged out immediately** and can't log in or register again with the same number. They see *"Your account has been blocked. Please contact your city admin."*
+- disappears from referral and expert search;
+- has all their posts and comments hidden from everyone.
+
+**Nothing is deleted.** Tap **Unblock** on their page and everything comes back. The page shows the reason, when they were blocked, and by whom.
+
+City admins can block ordinary members of their own city. Other admins can be blocked only by the main admin, and nobody can block the main admin or themselves.
+
+<img src="screenshots/mobile/21-member-blocked.png" width="300" alt="A blocked member"> <img src="screenshots/mobile/22-blocked-login.png" width="300" alt="What a blocked member sees">
+
+### 2.5 Moderation
 
 As city admin you can **edit or delete any post, photo or comment in your city**.
 
@@ -169,7 +191,7 @@ Log in with the main admin account (see the README for the first-login details) 
 | **City admins** | **Appoint a city admin.** Search a member by name or mobile, choose the city they will head, and click **Make city admin**. **Remove** takes the role away. The change applies immediately. |
 | **Manage a city** | Do anything a city admin can (settings, donations, causes) for **any** city |
 | **Cities** | Add new cities, rename them, or hide a city (hidden cities disappear from the sign-up list) |
-| **Members** | Search all members by name or mobile and filter by city |
+| **Members** | Every member in every city. Search by name or mobile, and filter by city and by *Active* or *Blocked*. Tap a name for the full profile and activity, and to **block or unblock** anyone, including city admins (see 2.4). |
 
 As main admin you can also moderate posts and comments in every city.
 

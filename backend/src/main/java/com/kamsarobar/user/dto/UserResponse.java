@@ -7,10 +7,11 @@ import com.kamsarobar.user.Role;
 import com.kamsarobar.user.User;
 
 public record UserResponse(Long id, String name, String mobile, Role role, CitySummary city,
-                           CitySummary managedCity, LocalDateTime createdAt) {
+                           CitySummary managedCity, boolean blocked, LocalDateTime createdAt) {
 
     public static UserResponse from(User user) {
         return new UserResponse(user.getId(), user.getName(), user.getMobile(), user.getRole(),
-                CitySummary.from(user.getCity()), CitySummary.from(user.getManagedCity()), user.getCreatedAt());
+                CitySummary.from(user.getCity()), CitySummary.from(user.getManagedCity()), user.isBlocked(),
+                user.getCreatedAt());
     }
 }

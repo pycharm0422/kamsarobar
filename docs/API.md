@@ -135,6 +135,22 @@ An event counts as upcoming until its end time. If it has no end time, it counts
 | POST | `/admin/city-admins` | `{ userId, cityId }`: appoint the head of a city |
 | DELETE | `/admin/city-admins/{userId}` | Revoke |
 
+## Member management (main admin: all cities · city admin: own city)
+
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/admin/members?q=&cityId=&status=ACTIVE\|BLOCKED&page=` | Lists members. For a city admin, results are limited to the city they manage, and asking for another city returns 403. |
+| GET | `/admin/members/{id}` | `{ member, profile, activity: { posts, comments, donations, donatedVerified, eventsAdded }, block: { blocked, reason, blockedAt, blockedBy }, canBlock }` |
+| POST | `/admin/members/{id}/block` | `{ reason }` (required). Who can block: the main admin can block anyone but themselves; a city admin can block ordinary members of their own city. Nobody can block the main admin. |
+| DELETE | `/admin/members/{id}/block` | Unblock, which restores everything |
+
+**What blocking does:**
+- The member's existing login stops working at once (401), and logging in returns 403 with a "blocked" message.
+- Registering again with the same number returns 409.
+- They're left out of directory search.
+- Their posts and comments are hidden everywhere, including comment counts.
+- Nothing is deleted.
+
 ## Health
 
 `GET /actuator/health`, plus `/actuator/health/liveness` and `/actuator/health/readiness`.

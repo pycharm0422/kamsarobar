@@ -29,15 +29,18 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query(value = """
             select u from User u
             where (:cityId is null or u.city.id = :cityId)
+              and (:blocked is null or u.blocked = :blocked)
               and (:pattern is null or lower(u.name) like :pattern or u.mobile like :pattern)
             order by u.name asc
             """,
             countQuery = """
             select count(u) from User u
             where (:cityId is null or u.city.id = :cityId)
+              and (:blocked is null or u.blocked = :blocked)
               and (:pattern is null or lower(u.name) like :pattern or u.mobile like :pattern)
             """)
-    Page<User> search(@Param("cityId") Long cityId, @Param("pattern") String pattern, Pageable pageable);
+    Page<User> search(@Param("cityId") Long cityId, @Param("blocked") Boolean blocked,
+                      @Param("pattern") String pattern, Pageable pageable);
 
     long countByCityId(Long cityId);
 }

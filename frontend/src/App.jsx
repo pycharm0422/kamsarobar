@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminPage from './pages/admin/AdminPage';
+import MemberPage from './pages/admin/MemberPage';
 import DonatePage from './pages/DonatePage';
 import EventsPage from './pages/EventsPage';
 import FindExpertPage from './pages/FindExpertPage';
@@ -36,6 +37,10 @@ export default function App() {
           <Route
             path="/admin"
             element={<ProtectedRoute roles={['MAIN_ADMIN', 'CITY_ADMIN']}><AdminPage /></ProtectedRoute>}
+          />
+          <Route
+            path="/admin/members/:id"
+            element={<ProtectedRoute roles={['MAIN_ADMIN', 'CITY_ADMIN']}><MemberPage /></ProtectedRoute>}
           />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>

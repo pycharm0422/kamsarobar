@@ -40,6 +40,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @EntityGraph(attributePaths = {"author", "city"})
     Optional<Post> findWithAuthorById(Long id);
 
+    long countByAuthorId(Long authorId);
+
     // --- Events & seminars. "Upcoming" = not yet ended: end time in the future, or (no end time)
     // started less than 6 hours ago. Visibility rules apply here too. ---
 

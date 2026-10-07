@@ -89,4 +89,9 @@ export const adminApi = {
   cityAdmins: () => data(client.get('/admin/city-admins')),
   assignCityAdmin: (userId, cityId) => data(client.post('/admin/city-admins', { userId, cityId })),
   revokeCityAdmin: (userId) => data(client.delete(`/admin/city-admins/${userId}`)),
+  // Main admin: every city. City admin: their own city only.
+  members: (params) => data(client.get('/admin/members', { params })),
+  member: (id) => data(client.get(`/admin/members/${id}`)),
+  block: (id, reason) => data(client.post(`/admin/members/${id}/block`, { reason })),
+  unblock: (id) => data(client.delete(`/admin/members/${id}/block`)),
 };

@@ -52,6 +52,18 @@ public class User {
     @JoinColumn(name = "managed_city_id")
     private City managedCity;
 
+    /** Blocked members cannot log in, are hidden from search, and their posts and comments are hidden. */
+    @Column(nullable = false)
+    private boolean blocked;
+
+    private String blockedReason;
+
+    private LocalDateTime blockedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "blocked_by_id")
+    private User blockedBy;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -73,6 +85,21 @@ public class User {
     public void makeCityAdmin(City cityToManage) {
         this.role = Role.CITY_ADMIN;
         this.managedCity = cityToManage;
+    }
+
+    public void block(String reason, User by) {
+        this.blocked = true;
+        this.blockedReason = reason;
+        this.blockedAt = LocalDateTime.now();
+        this.blockedBy = by;
+    }
+
+    /** Fully restores the account; the block history fields are cleared. */
+    public void unblock() {
+        this.blocked = false;
+        this.blockedReason = null;
+        this.blockedAt = null;
+        this.blockedBy = null;
     }
 
     public void revokeCityAdmin() {
@@ -128,6 +155,22 @@ public class User {
 
     public City getManagedCity() {
         return managedCity;
+    }
+
+    public boolean isBlocked() {
+        return blocked;
+    }
+
+    public String getBlockedReason() {
+        return blockedReason;
+    }
+
+    public LocalDateTime getBlockedAt() {
+        return blockedAt;
+    }
+
+    public User getBlockedBy() {
+        return blockedBy;
     }
 
     public LocalDateTime getCreatedAt() {

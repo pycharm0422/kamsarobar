@@ -18,7 +18,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Reads the bearer token and loads the current user. The user is re-read from the database on each request
- * (a primary-key lookup) so role changes such as being made a city admin apply immediately.
+ * (a primary-key lookup) so role changes such as being made a city admin, and blocking, apply immediately.
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -41,6 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 && SecurityContextHolder.getContext().getAuthentication() == null) {
             tokenService.resolveUserId(header.substring(BEARER.length()))
                     .flatMap(userRepository::findWithCitiesById)
+                    .filter(user -> !user.isBlocked())
                     .map(UserPrincipal::from)
                     .ifPresent(principal -> {
                         var auth = new UsernamePasswordAuthenticationToken(principal, null,

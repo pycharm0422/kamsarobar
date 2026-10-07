@@ -10,6 +10,7 @@ import com.kamsarobar.auth.dto.RegisterRequest;
 import com.kamsarobar.city.City;
 import com.kamsarobar.city.CityService;
 import com.kamsarobar.common.exception.ConflictException;
+import com.kamsarobar.common.exception.ForbiddenException;
 import com.kamsarobar.common.exception.UnauthorizedException;
 import com.kamsarobar.common.util.PhoneNumberNormalizer;
 import com.kamsarobar.common.util.TextNormalizer;
@@ -21,6 +22,8 @@ import com.kamsarobar.user.dto.UserResponse;
 
 @Service
 public class AuthService {
+
+    static final String BLOCKED_MESSAGE = "Your account has been blocked. Please contact your city admin.";
 
     private final UserRepository userRepository;
     private final CityService cityService;
@@ -40,9 +43,10 @@ public class AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         String mobile = phoneNormalizer.normalize(request.mobile());
-        if (userRepository.existsByMobile(mobile)) {
-            throw new ConflictException("This mobile number is already registered. Please log in.");
-        }
+        userRepository.findByMobile(mobile).ifPresent(existing -> {
+            throw new ConflictException(existing.isBlocked() ? BLOCKED_MESSAGE
+                    : "This mobile number is already registered. Please log in.");
+        });
         City city = cityService.getActiveEntity(request.cityId());
         User user = userRepository.save(new User(TextNormalizer.clean(request.name()), mobile,
                 passwordEncoder.encode(request.password()), city));
@@ -60,6 +64,9 @@ public class AuthService {
         User user = userRepository.findByMobile(mobile)
                 .filter(u -> passwordEncoder.matches(request.password(), u.getPasswordHash()))
                 .orElseThrow(() -> new UnauthorizedException("Invalid mobile number or password"));
+        if (user.isBlocked()) {
+            throw new ForbiddenException(BLOCKED_MESSAGE);
+        }
         return toResponse(user);
     }
 

@@ -37,9 +37,14 @@ export function AuthProvider({ children }) {
     userApi
       .me()
       .then(setUser)
-      .catch(() => logout())
+      .catch(() => {
+        // The session ended on the server (expired, or the account was blocked): send them to the login page,
+        // unlike a deliberate "Log out", which goes home.
+        tokenStore.clear();
+        setUser(null);
+      })
       .finally(() => setReady(true));
-  }, [setUser, logout]);
+  }, [setUser]);
 
   useEffect(() => {
     const onLogout = () => setUser(null);

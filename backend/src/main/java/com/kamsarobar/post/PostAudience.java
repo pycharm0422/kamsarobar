@@ -6,6 +6,7 @@ import com.kamsarobar.security.UserPrincipal;
 
 /**
  * The single home of the "who can see this post" rule. A post is visible to a viewer when any of these hold:
+ * Posts by blocked members are hidden from everyone. Otherwise, a post is visible when:
  * <ul>
  *   <li>the post is shared with {@link PostVisibility#EVERYONE};</li>
  *   <li>the viewer lives in the post's city;</li>
@@ -17,19 +18,22 @@ import com.kamsarobar.security.UserPrincipal;
  */
 public record PostAudience(Long viewerId, Long cityId, Long managedCityId, boolean seesAll) {
 
-    /** Requires the parameters :seesAll, :viewerId, :viewerCityId and :viewerManagedCityId. */
+    /** Wrapped in parentheses so it can follow "and" directly. Requires the parameters :seesAll, :viewerId, :viewerCityId and :viewerManagedCityId. */
     public static final String JPQL_FILTER = """
-            (:seesAll = true
+            (p.author.blocked = false and (:seesAll = true
              or p.visibility = com.kamsarobar.post.PostVisibility.EVERYONE
              or p.city.id = :viewerCityId
              or p.city.id = :viewerManagedCityId
-             or p.author.id = :viewerId)""";
+             or p.author.id = :viewerId))""";
 
     public static PostAudience of(UserPrincipal viewer) {
         return new PostAudience(viewer.id(), viewer.cityId(), viewer.managedCityId(), viewer.isMainAdmin());
     }
 
     public boolean canSee(Post post) {
+        if (post.getAuthor().isBlocked()) {
+            return false;
+        }
         Long postCity = post.getCity().getId();
         return seesAll
                 || post.getVisibility() == PostVisibility.EVERYONE
