@@ -53,13 +53,22 @@ Each result (`MemberCard`) contains `userId, name, mobile` (digits with country 
 | GET | `/cities/{id}` | member | Includes `whatsappGroupUrl` and `bank` |
 | PUT | `/cities/{id}/settings` | that city's admin / main admin | `{ whatsappGroupUrl, bankAccountName, bankAccountNumber, bankIfsc, bankName, upiId }` |
 
+## Photos
+
+| Method | Path | Who | Notes |
+|---|---|---|---|
+| POST | `/images` (multipart, field `file`) | member | One photo, maximum 3 MB, in JPG, PNG, WEBP or GIF. The type is checked from the file contents. Returns `{ id, url, width, height }`. The frontend shrinks bigger photos first. |
+| GET | `/images/{id}` | public | Serves the photo with `Cache-Control: immutable`. Ids are random UUIDs. |
+
+Upload photos first, then send their ids in `imageIds` when you create or edit a post. Photos that are never attached to a post, or are removed from one, are deleted by an hourly job after 24 hours.
+
 ## Posts & comments
 
 | Method | Path | Who |
 |---|---|---|
 | GET | `/posts?cityId=&category=&page=` | member |
 | GET | `/posts/{id}` | member |
-| POST | `/posts` `{ category, title, content }` | member (posts to their own city) |
+| POST | `/posts` | member (posts to their own city) |
 | PUT | `/posts/{id}` | author / city admin / main admin |
 | DELETE | `/posts/{id}` | author / city admin / main admin |
 | GET | `/posts/{id}/comments?page=` | member |
@@ -67,13 +76,38 @@ Each result (`MemberCard`) contains `userId, name, mobile` (digits with country 
 | PUT | `/comments/{id}` | author / city admin / main admin |
 | DELETE | `/comments/{id}` | author / city admin / main admin |
 
-Categories: `GENERAL`, `JOB_OPENING`, `HELP_NEEDED`, `EVENT`, `ANNOUNCEMENT`.
+Post body:
+
+```json
+{ "category": "SEMINAR", "title": "Career seminar", "content": "...", "imageIds": ["<uuid>"],
+  "eventStartsAt": "2026-10-12T12:00:00Z", "eventEndsAt": null,
+  "eventLocation": "Community hall", "eventLink": "https://meet.google.com/..." }
+```
+
+Categories: `GENERAL`, `JOB_OPENING`, `HELP_NEEDED`, `SEMINAR`, `EVENT`, `ANNOUNCEMENT`.
+
+- A normal post needs text **or** at least one photo. The title is optional. At most 6 photos.
+- `SEMINAR` and `EVENT` posts need a `title` and a future `eventStartsAt`. The `event*` fields are ignored for other categories.
+- Times are ISO-8601 instants (UTC).
+- Each post in a response includes `images: [{ id, url, width, height }]`. Event posts also include `event: { startsAt, endsAt, location, link, attendeeCount, attending, ended }`.
+
+## Events & seminars
+
+| Method | Path | Notes |
+|---|---|---|
+| PUT | `/posts/{id}/attendance` | Add to my upcoming events (doing it twice has no extra effect). Returns the updated post. |
+| DELETE | `/posts/{id}/attendance` | Remove from my events |
+| GET | `/events/mine?page=` | My upcoming events, soonest first |
+| GET | `/events/upcoming?cityId=&page=` | Upcoming events in a city, or in all cities if `cityId` is omitted |
+
+An event counts as upcoming until its end time. If it has no end time, it counts as upcoming until 6 hours after it starts.
 
 ## Donations & campaigns
 
 | Method | Path | Who | Notes |
 |---|---|---|---|
-| GET | `/donations/summary` | public | `{ totalCollected, cities: [{ cityId, cityName, collected, donations, pending }] }` |
+| GET | `/cities/{id}/donation-summary` | member | `{ cityId, cityName, collected, donations, pending }`. The app shows the member's own city by default. |
+| GET | `/donations/summary` | public | Overall total plus a per-city breakdown. Used for logged-out visitors (total only) and admin reports. |
 | POST | `/donations` | member | `{ cityId, campaignId?, amount, transactionRef, note, anonymous }`. Saved as `PENDING`. |
 | GET | `/donations/mine` | member | |
 | GET | `/cities/{id}/supporters` | member | Verified donors (anonymous donors are hidden) |

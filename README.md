@@ -4,8 +4,10 @@ A community platform for Kamsar o Bar. Members are grouped by city, and the plat
 
 - **Get referred.** Saw a job? Type the company name, find members who can refer you, and send them a ready-made WhatsApp message in one tap.
 - **Ask an expert.** Search members by expertise (career, technology, exams, business, health...) and message them for advice.
-- **Join their city circle.** Each city has its own feed (posts and comments) and a WhatsApp group link, both managed by a city admin.
-- **Give back.** Members make small donations to their city's bank or UPI account. The total collected is shown openly, city by city.
+- **Post anything.** Members share text and photos with their city. Photos are shrunk in the browser to 3 MB or less, without distortion.
+- **Seminars and events.** Members post seminars and events, and others tap **Add to my events** to keep them in their *My upcoming events* list (with Google, phone and Outlook calendar export).
+- **Join their city circle.** Each city has a WhatsApp group link managed by a city admin.
+- **Give back.** Members make small donations to their city's bank or UPI account. Each member sees their own city's total by default, and can pick any other city to see its total.
 
 ![Home page](docs/screenshots/01-home.png)
 
@@ -44,7 +46,7 @@ docker compose up --build
 
 The first build takes a few minutes. Then open **http://localhost:3000**.
 
-- The database is stored in a Docker volume, so your data survives restarts. `docker compose down -v` wipes it.
+- The database and uploaded photos are stored in Docker volumes, so your data survives restarts. `docker compose down -v` wipes them.
 - To change the admin login, JWT secret or database password, copy `.env.example` to `.env` and edit it before running `docker compose up`.
 
 ### Option B: run backend and frontend directly (for development)
@@ -66,7 +68,7 @@ cd backend
 mvn spring-boot:run
 ```
 
-This starts the API on **http://localhost:8080** using the `dev` profile. The `dev` profile uses an H2 database stored in a file at `backend/data/`, so there's nothing else to install. Flyway creates the tables and seeds a starter list of cities automatically.
+This starts the API on **http://localhost:8080** using the `dev` profile. The `dev` profile uses an H2 database stored in a file at `backend/data/` (uploaded photos go to `backend/data/uploads/`), so there's nothing else to install. Flyway creates the tables and seeds a starter list of cities automatically.
 
 **2. Start the frontend** (terminal 2):
 
@@ -111,7 +113,7 @@ cd backend
 mvn test
 ```
 
-The tests include an end-to-end integration test that covers registration, both profile forms, referral and expert search, posts and comments, appointing a city admin, city settings, and donation verification.
+The tests include end-to-end integration tests. One covers registration, both profile forms, referral and expert search, posts and comments, appointing a city admin, city settings and donation verification. The other covers photo upload and validation, photo-only posts, seminars, "add to my events" and per-city donation totals.
 
 ```bash
 cd frontend
@@ -135,6 +137,7 @@ All settings are environment variables with safe defaults for local use (see `ba
 | `DEFAULT_COUNTRY_CODE` | `91` | Added to 10-digit mobile numbers (used for WhatsApp links) |
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:5173,http://localhost:3000` | Only needed if the frontend is on a different domain than the API |
 | `PORT` | `8080` | Backend HTTP port |
+| `STORAGE_PATH` | `./data/uploads` | Folder for uploaded photos (a Docker volume in `docker-compose.yml`) |
 | `VITE_API_BASE_URL` (frontend, at build time) | `/api` | API location, if not served from the same domain |
 
 ---
@@ -149,7 +152,9 @@ kamsarobar/
 │   │   ├── user/                user entity, roles, edit basic info
 │   │   ├── profile/             professional profile (form 2), companies & skills
 │   │   ├── directory/           referral & expert search (pluggable strategies)
-│   │   ├── post/                posts & comments CRUD
+│   │   ├── post/                posts (text, photos, seminars/events) & comments
+│   │   ├── event/               "my upcoming events" & discover events
+│   │   ├── media/               photo upload, storage & cleanup
 │   │   ├── donation/            donations, campaigns, city-wise totals
 │   │   ├── city/                cities, WhatsApp group & bank details
 │   │   ├── admin/               main-admin operations

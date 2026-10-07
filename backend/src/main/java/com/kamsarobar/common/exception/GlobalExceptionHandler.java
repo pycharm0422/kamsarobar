@@ -17,6 +17,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 /**
  * Translates exceptions into a consistent JSON error body so the frontend has a single error shape to handle.
@@ -36,6 +38,16 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleBadRequest(Exception ex) {
         String message = ex instanceof BadRequestException ? ex.getMessage() : "Malformed request";
         return build(HttpStatus.BAD_REQUEST, message, null);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiError> handleTooLarge(MaxUploadSizeExceededException ex) {
+        return build(HttpStatus.PAYLOAD_TOO_LARGE, "Photo must be 3 MB or smaller", null);
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<ApiError> handleMissingPart(MissingServletRequestPartException ex) {
+        return build(HttpStatus.BAD_REQUEST, "Please choose a photo", null);
     }
 
     @ExceptionHandler(ConflictException.class)

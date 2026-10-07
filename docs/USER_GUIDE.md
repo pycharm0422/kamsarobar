@@ -60,29 +60,57 @@ Right after joining you see **Step 2 of 2**. Fill this in so other members can f
 
 Same as above, but click **Find expert** and search by expertise (for example "design" finds *System Design* and *UI Design*). Click **Ask for advice** to open WhatsApp with a polite request.
 
-### 1.5 Your city community
+### 1.5 Posts
 
-Click **Community** to see posts from your city.
+Open **Posts** from the menu. You see your own city's posts first. Use the dropdowns to read another city, all cities, or one type of post.
 
-- **Create a post.** Add a title, pick a category (*General*, *Job opening*, *Help needed*, *Event*, *Announcement*), write it, and click **Post**. You can post in your own city.
-- **Read other cities.** Use the city dropdown, or choose *All cities*.
-- **Comment.** Open a post to read and add comments.
-- **Edit or delete.** Your own posts and comments show **Edit** and **Delete** links.
-- **Join the WhatsApp group.** The right-hand panel has a **Join <city> WhatsApp group** button once your city admin adds the link.
+**Post anything.** Text, photos, or both:
 
-![Post with comments](screenshots/06-post-detail.png)
+1. Optionally choose what you're posting: *General*, *Job opening*, *Help needed*, *Seminar*, *Event* or *Announcement*.
+2. Add a title if you like. It's optional for normal posts.
+3. Write your text, tap **📷 Add photos** to attach up to 6 photos, or do both.
+4. Tap **Post**. Your post goes to your city's community.
 
-### 1.6 Donate
+**Photos.** You can pick photos straight from your phone's gallery or camera, whatever their size:
 
-Click **Donate**.
+- Photos up to 3 MB are uploaded exactly as they are, with no quality loss.
+- Bigger photos (a phone camera photo is often 5–12 MB) are shrunk on your phone to under 3 MB before uploading. They keep their exact shape, so nothing is stretched or squashed. Phone photos stay the right way up, and the quality stays high. Uploading is faster too.
+- In a post, a single photo is shown whole. Several photos appear as tiles; tap any photo to see it full-screen, uncropped, and swipe through with ‹ ›.
 
-1. **Send money.** Your city's bank account and UPI ID are shown. Use **Copy**, or on a phone tap **Pay with a UPI app** to open GPay, PhonePe or Paytm with the details filled in.
+**Comments, editing and deleting.** Tap a post (or its time) to open it, read the comments and add your own. Your own posts and comments show **Edit** and **Delete**.
+
+**Join the WhatsApp group.** Below the posts on a phone (or on the right on a computer), the city card has a **Join <city> WhatsApp group** button once your city admin adds the link.
+
+<img src="screenshots/mobile/04-community-feed.png" width="300" alt="Posts page on a phone">
+
+### 1.6 Seminars and events
+
+**Post a seminar or event.** On **Posts**, choose *Seminar* or *Event*. Extra fields appear:
+
+- **Starts** (required) and **Ends** (optional) date and time
+- **Venue**, an **Online link** (Zoom, Google Meet...) or both
+
+Add a title and description (and photos, such as a poster), then tap **Post**.
+
+<img src="screenshots/mobile/16-seminar-form.png" width="300" alt="Posting a seminar">
+
+**Add it to your list.** Anyone can tap **＋ Add to my events** on a seminar or event. The button changes to **✓ In my events**, and the event appears under **Events → My upcoming events**, soonest first. Once added, you can also put it in your own calendar with **Google Calendar** or **Phone / Outlook** (downloads a calendar file).
+
+Tap **✓ In my events** again to remove it. Events disappear from the list automatically once they're over.
+
+**Find events.** **Events → Discover** lists upcoming seminars and events in your city, or in any city you pick.
+
+<img src="screenshots/mobile/14-my-upcoming-events.png" width="300" alt="My upcoming events">
+
+### 1.7 Donate
+
+Click **Donate**. You see **your own city's fund** by default: how much has been collected and from how many contributions. To see another city's fund, pick it under **See another city**; **← Back to <your city>** returns.
+
+1. **Send money.** The selected city's bank account and UPI ID are shown. Use **Copy**, or on a phone tap **Pay with a UPI app** to open GPay, PhonePe or Paytm with the details filled in.
 2. **Record your contribution.** Enter the amount (or tap ₹51, ₹101 and so on), optionally pick a cause, and add the **UPI or bank transaction reference** so the admin can match your payment. Tick *Anonymous* if you don't want your name on the supporters list.
 3. Your contribution shows as **PENDING** under *My contributions*. Once the city admin checks the bank statement and verifies it, it becomes **VERIFIED** and is added to the city's total.
 
-The panel on the right shows **how much has been collected, city by city**.
-
-![Donate page](screenshots/10-donate.png)
+<img src="screenshots/mobile/09-donate.png" width="300" alt="Donate page">
 
 > The website never handles money itself. Money goes straight to the city's bank account. The site only records and displays contributions, so totals are transparent.
 
@@ -116,7 +144,7 @@ Only verified donations count towards the totals shown to everyone.
 
 ### 2.4 Moderation
 
-As city admin you can **edit or delete any post or comment in your city**.
+As city admin you can **edit or delete any post, photo or comment in your city**.
 
 ---
 

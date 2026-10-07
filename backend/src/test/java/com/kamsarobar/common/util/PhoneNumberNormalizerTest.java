@@ -13,7 +13,7 @@ import com.kamsarobar.config.AppProperties;
 class PhoneNumberNormalizerTest {
 
     private final PhoneNumberNormalizer normalizer = new PhoneNumberNormalizer(
-            new AppProperties(null, new AppProperties.Cors(List.of()), null, new AppProperties.Phone("91")));
+            new AppProperties(null, new AppProperties.Cors(List.of()), null, new AppProperties.Phone("91"), null));
 
     @Test
     void addsDefaultCountryCodeToTenDigitNumbers() {

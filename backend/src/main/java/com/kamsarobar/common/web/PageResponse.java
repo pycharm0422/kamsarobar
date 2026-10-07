@@ -15,4 +15,10 @@ public record PageResponse<T>(List<T> content, int page, int size, long totalEle
         return new PageResponse<>(page.getContent().stream().map(mapper).toList(), page.getNumber(),
                 page.getSize(), page.getTotalElements(), page.getTotalPages(), page.isLast());
     }
+
+    /** For content that was mapped in one batch (e.g. to avoid per-row queries). */
+    public static <T> PageResponse<T> of(Page<?> page, List<T> content) {
+        return new PageResponse<>(content, page.getNumber(), page.getSize(), page.getTotalElements(),
+                page.getTotalPages(), page.isLast());
+    }
 }

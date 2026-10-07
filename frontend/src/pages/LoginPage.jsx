@@ -18,7 +18,7 @@ export default function LoginPage() {
     setError('');
     try {
       await login(form);
-      navigate(location.state?.from || '/community', { replace: true });
+      navigate(location.state?.from || '/posts', { replace: true });
     } catch (err) {
       setError(errorMessage(err));
     } finally {

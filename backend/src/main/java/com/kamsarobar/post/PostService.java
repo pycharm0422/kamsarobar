@@ -1,8 +1,6 @@
 package com.kamsarobar.post;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.Instant;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,8 +8,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kamsarobar.access.AccessPolicy;
+import com.kamsarobar.common.exception.BadRequestException;
 import com.kamsarobar.common.exception.ResourceNotFoundException;
+import com.kamsarobar.common.util.TextNormalizer;
 import com.kamsarobar.common.web.PageResponse;
+import com.kamsarobar.media.Image;
+import com.kamsarobar.media.ImageService;
 import com.kamsarobar.post.dto.PostRequest;
 import com.kamsarobar.post.dto.PostResponse;
 import com.kamsarobar.security.UserPrincipal;
@@ -23,16 +25,18 @@ import com.kamsarobar.user.UserService;
 public class PostService {
 
     private final PostRepository postRepository;
-    private final CommentRepository commentRepository;
     private final UserService userService;
+    private final ImageService imageService;
     private final AccessPolicy accessPolicy;
+    private final PostResponseAssembler assembler;
 
-    public PostService(PostRepository postRepository, CommentRepository commentRepository, UserService userService,
-                       AccessPolicy accessPolicy) {
+    public PostService(PostRepository postRepository, UserService userService, ImageService imageService,
+                       AccessPolicy accessPolicy, PostResponseAssembler assembler) {
         this.postRepository = postRepository;
-        this.commentRepository = commentRepository;
         this.userService = userService;
+        this.imageService = imageService;
         this.accessPolicy = accessPolicy;
+        this.assembler = assembler;
     }
 
     /** City feed (or all cities when cityId is null), newest first, optionally filtered by category. */
@@ -48,37 +52,45 @@ public class PostService {
                     ? postRepository.findAllByOrderByCreatedAtDesc(pageable)
                     : postRepository.findByCategoryOrderByCreatedAtDesc(category, pageable);
         }
-        Map<Long, Long> counts = commentCounts(page.getContent());
-        return PageResponse.of(page, post -> toResponse(post, counts.getOrDefault(post.getId(), 0L), viewer));
+        return assembler.toPage(page, viewer);
     }
 
     public PostResponse get(Long id, UserPrincipal viewer) {
-        Post post = getEntity(id);
-        return toResponse(post, commentRepository.countByPostId(id), viewer);
+        return assembler.toResponse(getEntity(id), viewer);
     }
 
     /** Members post into their own city's community. */
     @Transactional
     public PostResponse create(PostRequest request, UserPrincipal actor) {
         User author = userService.getEntity(actor.id());
-        Post post = postRepository.save(new Post(author, author.getCity(), categoryOrDefault(request),
-                request.title().trim(), request.content().trim()));
-        return toResponse(post, 0, actor);
+        PostCategory category = categoryOrDefault(request);
+        validate(request, category, true);
+        Post post = new Post(author, author.getCity(), category, TextNormalizer.clean(request.title()),
+                trimToNull(request.content()));
+        applyEvent(post, request, category);
+        postRepository.save(post);
+        imageService.setPostImages(post, request.imageIds(), actor.id());
+        return assembler.toResponse(post, actor);
     }
 
     @Transactional
     public PostResponse update(Long id, PostRequest request, UserPrincipal actor) {
         Post post = getEntity(id);
         accessPolicy.requireContentModifier(actor, post.getAuthor().getId(), post.getCity().getId());
-        post.edit(categoryOrDefault(request), request.title().trim(), request.content().trim());
+        PostCategory category = categoryOrDefault(request);
+        validate(request, category, false);
+        post.edit(category, TextNormalizer.clean(request.title()), trimToNull(request.content()));
+        applyEvent(post, request, category);
+        imageService.setPostImages(post, request.imageIds(), actor.id());
         postRepository.flush();
-        return toResponse(post, commentRepository.countByPostId(id), actor);
+        return assembler.toResponse(post, actor);
     }
 
     @Transactional
     public void delete(Long id, UserPrincipal actor) {
         Post post = getEntity(id);
         accessPolicy.requireContentModifier(actor, post.getAuthor().getId(), post.getCity().getId());
+        post.getImages().forEach(Image::detach); // the photos are removed by the cleanup job
         postRepository.delete(post);
     }
 
@@ -86,23 +98,47 @@ public class PostService {
         return postRepository.findWithAuthorById(id).orElseThrow(() -> new ResourceNotFoundException("Post", id));
     }
 
-    private PostResponse toResponse(Post post, long commentCount, UserPrincipal viewer) {
-        boolean canEdit = accessPolicy.canModifyContent(viewer, post.getAuthor().getId(), post.getCity().getId());
-        return PostResponse.from(post, commentCount, canEdit);
+    private static void validate(PostRequest request, PostCategory category, boolean creating) {
+        boolean hasText = trimToNull(request.content()) != null;
+        boolean hasPhotos = request.imageIds() != null && !request.imageIds().isEmpty();
+        if (!category.isEvent() && !hasText && !hasPhotos) {
+            throw new BadRequestException("Write something or add a photo");
+        }
+        if (!category.isEvent()) {
+            return;
+        }
+        if (TextNormalizer.clean(request.title()) == null) {
+            throw new BadRequestException("Please give the event a title");
+        }
+        if (request.eventStartsAt() == null) {
+            throw new BadRequestException("Please add the date and time of the event");
+        }
+        if (creating && request.eventStartsAt().isBefore(Instant.now())) {
+            throw new BadRequestException("The event date must be in the future");
+        }
+        if (request.eventEndsAt() != null && !request.eventEndsAt().isAfter(request.eventStartsAt())) {
+            throw new BadRequestException("The event must end after it starts");
+        }
     }
 
-    private Map<Long, Long> commentCounts(List<Post> posts) {
-        Map<Long, Long> counts = new HashMap<>();
-        if (posts.isEmpty()) {
-            return counts;
+    private static void applyEvent(Post post, PostRequest request, PostCategory category) {
+        if (category.isEvent()) {
+            post.setEvent(request.eventStartsAt(), request.eventEndsAt(),
+                    TextNormalizer.clean(request.eventLocation()), TextNormalizer.clean(request.eventLink()));
+        } else {
+            post.setEvent(null, null, null, null);
         }
-        for (Object[] row : commentRepository.countByPostIds(posts.stream().map(Post::getId).toList())) {
-            counts.put((Long) row[0], (Long) row[1]);
-        }
-        return counts;
     }
 
     private static PostCategory categoryOrDefault(PostRequest request) {
         return request.category() == null ? PostCategory.GENERAL : request.category();
+    }
+
+    private static String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.strip();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }

@@ -1,6 +1,9 @@
 package com.kamsarobar.post;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -8,6 +11,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
 import com.kamsarobar.city.City;
+import com.kamsarobar.media.Image;
 import com.kamsarobar.user.User;
 
 import jakarta.persistence.Column;
@@ -20,6 +24,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 
 @Entity
@@ -43,11 +49,22 @@ public class Post {
     @Column(nullable = false)
     private PostCategory category;
 
-    @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
     private String content;
+
+    /** Set only for events and seminars. */
+    private Instant eventStartsAt;
+
+    private Instant eventEndsAt;
+
+    private String eventLocation;
+
+    private String eventLink;
+
+    @OneToMany(mappedBy = "post")
+    @OrderBy("position ASC")
+    private List<Image> images = new ArrayList<>();
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
@@ -74,6 +91,26 @@ public class Post {
         this.content = content;
     }
 
+    public void setEvent(Instant startsAt, Instant endsAt, String location, String link) {
+        this.eventStartsAt = startsAt;
+        this.eventEndsAt = endsAt;
+        this.eventLocation = location;
+        this.eventLink = link;
+    }
+
+    public boolean isEvent() {
+        return eventStartsAt != null;
+    }
+
+    /** An event is over once its end time passes, or 6 hours after it started if no end time was given. */
+    public boolean hasEnded(Instant now) {
+        if (eventStartsAt == null) {
+            return false;
+        }
+        Instant end = eventEndsAt != null ? eventEndsAt : eventStartsAt.plusSeconds(6 * 3600);
+        return end.isBefore(now);
+    }
+
     public Long getId() {
         return id;
     }
@@ -96,6 +133,26 @@ public class Post {
 
     public String getContent() {
         return content;
+    }
+
+    public Instant getEventStartsAt() {
+        return eventStartsAt;
+    }
+
+    public Instant getEventEndsAt() {
+        return eventEndsAt;
+    }
+
+    public String getEventLocation() {
+        return eventLocation;
+    }
+
+    public String getEventLink() {
+        return eventLink;
+    }
+
+    public List<Image> getImages() {
+        return images;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -21,6 +21,7 @@ import com.kamsarobar.common.web.PageResponse;
 import com.kamsarobar.common.web.Pages;
 import com.kamsarobar.donation.dto.CampaignRequest;
 import com.kamsarobar.donation.dto.CampaignResponse;
+import com.kamsarobar.donation.dto.CityDonationSummary;
 import com.kamsarobar.donation.dto.DonationRequest;
 import com.kamsarobar.donation.dto.DonationResponse;
 import com.kamsarobar.donation.dto.DonationReviewRequest;
@@ -46,6 +47,12 @@ public class DonationController {
     @GetMapping("/donations/summary")
     public DonationSummaryResponse summary() {
         return donationService.summary();
+    }
+
+    /** One city's collected amount (members see their own city by default, others on selection). */
+    @GetMapping("/cities/{cityId}/donation-summary")
+    public CityDonationSummary citySummary(@PathVariable Long cityId) {
+        return donationService.summaryForCity(cityId);
     }
 
     @PostMapping("/donations")

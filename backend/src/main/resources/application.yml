@@ -20,6 +20,11 @@ spring:
         default_batch_fetch_size: 50
   flyway:
     enabled: true
+  servlet:
+    multipart:
+      # Photos are resized in the browser to <= 3 MB before upload; the server enforces the same limit.
+      max-file-size: 3MB
+      max-request-size: 4MB
   cache:
     cache-names: cities
     caffeine:
@@ -39,6 +44,11 @@ app:
     city: ${ADMIN_CITY:Ghazipur}
   phone:
     default-country-code: ${DEFAULT_COUNTRY_CODE:91}
+  storage:
+    # Where uploaded photos are kept (a Docker volume in docker-compose.yml).
+    local-path: ${STORAGE_PATH:./data/uploads}
+    max-image-bytes: 3145728
+    max-images-per-post: 6
 
 management:
   endpoints:

@@ -29,7 +29,8 @@ export default function Navbar() {
         <nav className={`nav-links ${open ? 'open' : ''}`}>
           {user ? (
             <>
-              <NavLink to="/community" onClick={close}>Community</NavLink>
+              <NavLink to="/posts" onClick={close}>Posts</NavLink>
+              <NavLink to="/events" onClick={close}>Events</NavLink>
               <NavLink to="/referrals" onClick={close}>Find referral</NavLink>
               <NavLink to="/experts" onClick={close}>Find expert</NavLink>
               <NavLink to="/donate" onClick={close}>Donate</NavLink>

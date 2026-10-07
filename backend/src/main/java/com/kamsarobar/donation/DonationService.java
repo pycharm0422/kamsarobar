@@ -73,6 +73,24 @@ public class DonationService {
         return new DonationSummaryResponse(total, cities);
     }
 
+    /** Collected / pending amounts for one city - what a member sees by default (their own city). */
+    public CityDonationSummary summaryForCity(Long cityId) {
+        City city = cityService.getEntity(cityId);
+        BigDecimal collected = BigDecimal.ZERO;
+        BigDecimal pending = BigDecimal.ZERO;
+        long count = 0;
+        for (Object[] row : donationRepository.aggregateForCity(cityId)) {
+            DonationStatus status = (DonationStatus) row[0];
+            if (status == DonationStatus.VERIFIED) {
+                collected = (BigDecimal) row[1];
+                count = ((Number) row[2]).longValue();
+            } else if (status == DonationStatus.PENDING) {
+                pending = (BigDecimal) row[1];
+            }
+        }
+        return new CityDonationSummary(city.getId(), city.getName(), collected, count, pending);
+    }
+
     @Transactional
     public DonationResponse record(DonationRequest request, UserPrincipal actor) {
         City city = cityService.getActiveEntity(request.cityId());

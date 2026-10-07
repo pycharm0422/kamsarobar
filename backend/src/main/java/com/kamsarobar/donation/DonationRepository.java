@@ -30,6 +30,10 @@ public interface DonationRepository extends JpaRepository<Donation, Long> {
     @Query("select d.city.id, d.status, sum(d.amount), count(d) from Donation d group by d.city.id, d.status")
     List<Object[]> aggregateByCityAndStatus();
 
+    /** Rows of [status, sum(amount), count] for one city. */
+    @Query("select d.status, sum(d.amount), count(d) from Donation d where d.city.id = :cityId group by d.status")
+    List<Object[]> aggregateForCity(@Param("cityId") Long cityId);
+
     /** Rows of [campaignId, sum(amount)] for verified donations. */
     @Query("""
             select d.campaign.id, sum(d.amount) from Donation d

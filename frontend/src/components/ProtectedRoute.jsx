@@ -11,6 +11,6 @@ export default function ProtectedRoute({ children, roles }) {
   if (!user) {
     return signedOut ? <Navigate to="/" replace /> : <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
-  if (roles && !roles.includes(user.role)) return <Navigate to="/community" replace />;
+  if (roles && !roles.includes(user.role)) return <Navigate to="/posts" replace />;
   return children;
 }

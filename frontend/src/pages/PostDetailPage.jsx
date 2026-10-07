@@ -39,13 +39,14 @@ export default function PostDetailPage() {
 
   return (
     <div className="container page narrow">
-      <Link to="/community" className="muted">← Back to community</Link>
+      <Link to="/posts" className="muted">← Back to posts</Link>
       <Alert onClose={() => setError('')}>{error}</Alert>
       <PostCard
         full
         post={post}
-        onUpdate={(pid, form) => run(async () => setPost(await postApi.update(pid, form)))}
-        onDelete={(pid) => run(async () => { await postApi.remove(pid); navigate('/community'); })}
+        onUpdate={async (pid, payload) => setPost(await postApi.update(pid, payload))}
+        onDelete={(pid) => run(async () => { await postApi.remove(pid); navigate('/posts'); })}
+        onChange={setPost}
       />
 
       <section className="card">

@@ -127,7 +127,7 @@ function ProfessionalForm({ welcome }) {
         Show me in referral & expert search
       </label>
       <div className="form-actions">
-        {welcome && <Link to="/community" className="btn btn-ghost">Skip for now</Link>}
+        {welcome && <Link to="/posts" className="btn btn-ghost">Skip for now</Link>}
         <button className="btn btn-primary" disabled={busy}>{busy ? 'Saving...' : 'Save profile'}</button>
       </div>
     </form>

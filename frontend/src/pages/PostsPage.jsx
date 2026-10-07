@@ -13,15 +13,14 @@ import { useAuth } from '../context/AuthContext';
 import { errorMessage } from '../utils/errors';
 import { CATEGORY_LABELS, formatMoney } from '../utils/format';
 
-export default function CommunityPage() {
+export default function PostsPage() {
   const { user } = useAuth();
   const [cityId, setCityId] = useState(String(user.city.id));
   const [category, setCategory] = useState('');
   const [feed, setFeed] = useState(null);
   const [city, setCity] = useState(null);
-  const [collected, setCollected] = useState(null);
+  const [fund, setFund] = useState(null);
   const [error, setError] = useState('');
-  const isMyCity = cityId === String(user.city.id);
 
   const load = useCallback(
     (page = 0) => {
@@ -38,30 +37,20 @@ export default function CommunityPage() {
 
   useEffect(() => {
     setCity(null);
+    setFund(null);
     if (!cityId) return;
     cityApi.get(cityId).then(setCity).catch(() => {});
-    donationApi
-      .summary()
-      .then((s) => setCollected(s.cities.find((c) => String(c.cityId) === cityId) || null))
-      .catch(() => {});
+    donationApi.citySummary(cityId).then(setFund).catch(() => {});
   }, [cityId]);
 
-  const createPost = async (form) => {
-    try {
-      await postApi.create(form);
-      load(0);
-    } catch (e) {
-      setError(errorMessage(e));
-    }
+  const replace = (updated) => setFeed((f) => ({ ...f, content: f.content.map((p) => (p.id === updated.id ? updated : p)) }));
+
+  const createPost = async (payload) => {
+    await postApi.create(payload);
+    if (cityId && cityId !== String(user.city.id)) setCityId(String(user.city.id));
+    else load(0);
   };
-  const updatePost = async (id, form) => {
-    try {
-      const updated = await postApi.update(id, form);
-      setFeed((f) => ({ ...f, content: f.content.map((p) => (p.id === id ? updated : p)) }));
-    } catch (e) {
-      setError(errorMessage(e));
-    }
-  };
+  const updatePost = async (id, payload) => replace(await postApi.update(id, payload));
   const deletePost = async (id) => {
     try {
       await postApi.remove(id);
@@ -75,12 +64,12 @@ export default function CommunityPage() {
     <div className="container page">
       <div className="page-header row-between">
         <div>
-          <h1>{city ? `${city.name} community` : 'All cities'}</h1>
-          <p className="muted">Posts, openings and events from members{city ? ` in ${city.name}` : ''}.</p>
+          <h1>Posts</h1>
+          <p className="muted">{city ? `What's happening in ${city.name}` : 'Posts from every city'}</p>
         </div>
         <div className="filters">
           <CitySelect value={cityId} onChange={setCityId} allLabel="All cities" />
-          <select value={category} onChange={(e) => setCategory(e.target.value)} aria-label="Category">
+          <select value={category} onChange={(e) => setCategory(e.target.value)} aria-label="Filter by type">
             <option value="">All posts</option>
             {Object.entries(CATEGORY_LABELS).map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
@@ -92,19 +81,18 @@ export default function CommunityPage() {
       <div className="layout-sidebar">
         <div>
           <Alert onClose={() => setError('')}>{error}</Alert>
-          {isMyCity && (
-            <div className="card">
-              <PostForm onSubmit={createPost} />
-            </div>
-          )}
+          <div className="card">
+            <PostForm onSubmit={createPost} />
+            <p className="muted small composer-note">Your post goes to the {user.city.name} community.</p>
+          </div>
           {!feed ? (
             <Spinner />
           ) : feed.content.length === 0 ? (
-            <EmptyState icon="📝" title="No posts yet">
-              {isMyCity ? 'Start the conversation in your city!' : 'Nothing has been posted here yet.'}
-            </EmptyState>
+            <EmptyState icon="📝" title="No posts yet">Be the first to share something!</EmptyState>
           ) : (
-            feed.content.map((p) => <PostCard key={p.id} post={p} onUpdate={updatePost} onDelete={deletePost} />)
+            feed.content.map((p) => (
+              <PostCard key={p.id} post={p} onUpdate={updatePost} onDelete={deletePost} onChange={replace} />
+            ))
           )}
           <Pagination page={feed} onChange={load} />
         </div>
@@ -120,11 +108,12 @@ export default function CommunityPage() {
               ) : (
                 <p className="muted small">The city admin has not added a WhatsApp group link yet.</p>
               )}
+              <Link to="/events" className="btn btn-ghost btn-block sidebar-link">🗓 Upcoming events</Link>
             </div>
             <div className="card">
-              <h3>❤️ Community fund</h3>
-              <p className="big-number">{formatMoney(collected?.collected)}</p>
-              <p className="muted small">collected in {city.name} from {collected?.donations || 0} contribution(s)</p>
+              <h3>❤️ {city.name} fund</h3>
+              <p className="big-number">{formatMoney(fund?.collected)}</p>
+              <p className="muted small">collected from {fund?.donations || 0} contribution(s)</p>
               <Link to={`/donate?city=${city.id}`} className="btn btn-primary btn-block">Contribute</Link>
             </div>
           </aside>

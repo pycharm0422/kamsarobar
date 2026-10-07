@@ -1,15 +1,16 @@
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminPage from './pages/admin/AdminPage';
-import CommunityPage from './pages/CommunityPage';
 import DonatePage from './pages/DonatePage';
+import EventsPage from './pages/EventsPage';
 import FindExpertPage from './pages/FindExpertPage';
 import FindReferralPage from './pages/FindReferralPage';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import NotFoundPage from './pages/NotFoundPage';
 import PostDetailPage from './pages/PostDetailPage';
+import PostsPage from './pages/PostsPage';
 import ProfilePage from './pages/ProfilePage';
 import RegisterPage from './pages/RegisterPage';
 
@@ -26,7 +27,9 @@ export default function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/donate" element={<DonatePage />} />
           <Route path="/profile" element={member(<ProfilePage />)} />
-          <Route path="/community" element={member(<CommunityPage />)} />
+          <Route path="/posts" element={member(<PostsPage />)} />
+          <Route path="/community" element={<Navigate to="/posts" replace />} />
+          <Route path="/events" element={member(<EventsPage />)} />
           <Route path="/posts/:id" element={member(<PostDetailPage />)} />
           <Route path="/referrals" element={member(<FindReferralPage />)} />
           <Route path="/experts" element={member(<FindExpertPage />)} />

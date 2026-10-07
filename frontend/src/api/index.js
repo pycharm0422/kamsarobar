@@ -1,5 +1,8 @@
 import client from './client';
 
+/** Full URL of an uploaded photo (the API returns paths like "/images/{id}"). */
+export const imageUrl = (image) => `${client.defaults.baseURL}${image.url}`;
+
 // Each resource gets its own small API object, so pages depend only on what they use.
 const data = (request) => request.then((response) => response.data);
 
@@ -44,8 +47,25 @@ export const postApi = {
   removeComment: (id) => data(client.delete(`/comments/${id}`)),
 };
 
+export const imageApi = {
+  upload: (file) => {
+    const form = new FormData();
+    form.append('file', file);
+    // Generous timeout: a 3 MB photo can take a while on a slow mobile connection.
+    return data(client.post('/images', form, { timeout: 120000 }));
+  },
+};
+
+export const eventApi = {
+  mine: (params) => data(client.get('/events/mine', { params })),
+  upcoming: (params) => data(client.get('/events/upcoming', { params })),
+  attend: (postId) => data(client.put(`/posts/${postId}/attendance`)),
+  leave: (postId) => data(client.delete(`/posts/${postId}/attendance`)),
+};
+
 export const donationApi = {
   summary: () => data(client.get('/donations/summary')),
+  citySummary: (cityId) => data(client.get(`/cities/${cityId}/donation-summary`)),
   record: (body) => data(client.post('/donations', body)),
   mine: (params) => data(client.get('/donations/mine', { params })),
   supporters: (cityId, params) => data(client.get(`/cities/${cityId}/supporters`, { params })),

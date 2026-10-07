@@ -23,7 +23,9 @@ Each feature is a self-contained package with its own entity, repository, servic
 | `user` | `User` entity, `Role` (MEMBER / CITY_ADMIN / MAIN_ADMIN), editing basic info and password |
 | `profile` | `UserProfile` (form 2), and the `Company` and `Skill` tag tables with autocomplete |
 | `directory` | "Who can refer me to X?" and "Who knows Y?" search |
-| `post` | Posts and comments CRUD with ownership and moderation rules |
+| `post` | Posts (text, photos, seminars and events) and comments, with ownership and moderation rules. Event attendees. `PostResponseAssembler` builds a whole page of responses with a fixed number of queries. |
+| `event` | "My upcoming events" and discovering upcoming events and seminars |
+| `media` | Photo upload, validation by file contents, storage behind the `ImageStorage` interface, and an hourly cleanup of unused photos |
 | `donation` | Donations (pending → verified/rejected), campaigns, city-wise totals |
 | `city` | Cities, WhatsApp group link, bank details |
 | `admin` | Main admin operations: appoint or revoke city admins, manage cities, list members |
@@ -42,6 +44,7 @@ Controllers are thin (HTTP ↔ DTO). Services hold the business logic and transa
 
 **O: Open/Closed.**
 - Search is built on `DirectorySearchStrategy`. `ReferralSearchStrategy` and `ExpertiseSearchStrategy` are two implementations. `DirectoryService` receives every strategy bean from Spring and picks one by `SearchType`. To add a new search (say, "by current position"), you add one class and the existing code doesn't change.
+- Photo storage is behind `ImageStorage`. `FileSystemImageStorage` is the default. Adding an S3 or Google Cloud Storage implementation needs no other code changes.
 - `TagResolver<T>` is one generic find-or-create-and-suggest implementation used for both companies and skills. A new tag type, such as *colleges*, is one entity, one repository and one bean.
 - On the frontend, `DirectorySearch` is a generic component. *Find referral* and *Find expert* are just configuration objects (labels, API call, message builder).
 
@@ -62,6 +65,8 @@ Controllers are thin (HTTP ↔ DTO). Services hold the business logic and transa
 | **Large result sets** | Every list endpoint is **paginated**. Page size is capped at 50 server-side (`Pages`). |
 | **N+1 queries** | `@EntityGraph` fetches authors and cities with posts. Comment counts for a whole feed page come from **one grouped query**. Hibernate batch fetching (`default_batch_fetch_size: 50`) handles collections. |
 | **Aggregations** | Donation totals are computed with `SUM … GROUP BY` **in the database**, not in Java. |
+| **Photos** | Shrunk in the **browser** to 3 MB or less before upload. That saves members' mobile data, server bandwidth and storage. The server checks the size and the real file type again. Photos are served with `Cache-Control: immutable` (cache forever), so a CDN or nginx can serve repeat views. For several backend instances, use an object-storage `ImageStorage` (S3, GCS, Cloudflare R2) or a shared volume. |
+| **Feeds** | Comment counts, attendee counts and the viewer's "going" flags for a page of posts come from **3 grouped queries in total**, not one per post. Photos are batch-fetched. |
 | **Read-heavy data** | The city list is cached (Caffeine) and evicted on change. For several instances, set `spring.cache.type=redis` and add the Redis starter. No code change is needed. |
 | **Schema changes** | Versioned **Flyway** migrations (`db/migration/V*.sql`). Hibernate only *validates* the schema and never alters it. |
 | **Operations** | `/actuator/health` (with liveness and readiness probes for Kubernetes), graceful shutdown, a connection-pool size set by environment variable, and Docker images that run as a non-root user. |
@@ -91,7 +96,9 @@ cities ─┬─< users >── managed_city (city admins)
         │     │
         │     └── user_profiles ─┬─< profile_referral_companies >── companies
         │                        └─< profile_skills >─────────────── skills
-        ├─< posts ─< comments
+        ├─< posts ─┬─< comments
+        │          ├─< images            (photos, ordered)
+        │          └─< event_attendees >── users
         ├─< campaigns
         └─< donations >── campaigns (optional)
 ```

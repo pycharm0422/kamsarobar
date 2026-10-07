@@ -7,19 +7,21 @@ import { formatMoney } from '../utils/format';
 const FEATURES = [
   { icon: '🤝', title: 'Get referred', text: 'Saw a job at a company? Type its name and find members who can refer you - then message them on WhatsApp in one tap.', to: '/referrals' },
   { icon: '💡', title: 'Ask an expert', text: 'Need advice on a career, a skill or a field? Find community members who know it well.', to: '/experts' },
-  { icon: '🏙️', title: 'Your city circle', text: 'Members are grouped by city. Join your city WhatsApp group and follow local posts, events and openings.', to: '/community' },
+  { icon: '📸', title: 'Posts & seminars', text: 'Share anything with your city - news, photos, openings. Add seminars and events to your own upcoming list.', to: '/posts' },
   { icon: '❤️', title: 'Give back', text: 'Small contributions, pooled city-wise, for social causes. Every rupee collected is shown openly.', to: '/donate' },
 ];
 
 export default function HomePage() {
   const { user } = useAuth();
-  const [summary, setSummary] = useState(null);
+  const [amount, setAmount] = useState(null);
 
+  // Members see their own city's fund by default; visitors see the community-wide total.
   useEffect(() => {
-    donationApi.summary().then(setSummary).catch(() => {});
-  }, []);
-
-  const topCities = summary?.cities.filter((c) => Number(c.collected) > 0).slice(0, 5) || [];
+    const request = user
+      ? donationApi.citySummary(user.city.id).then((s) => s.collected)
+      : donationApi.summary().then((s) => s.totalCollected);
+    request.then(setAmount).catch(() => {});
+  }, [user]);
 
   return (
     <>
@@ -39,7 +41,7 @@ export default function HomePage() {
               {user ? (
                 <>
                   <Link to="/referrals" className="btn btn-primary btn-lg">Find a referral</Link>
-                  <Link to="/community" className="btn btn-light btn-lg">Go to my city</Link>
+                  <Link to="/posts" className="btn btn-light btn-lg">See posts</Link>
                 </>
               ) : (
                 <>
@@ -50,21 +52,11 @@ export default function HomePage() {
             </div>
           </div>
           <div className="hero-card card">
-            <p className="muted small">Collected so far for community causes</p>
-            <p className="hero-amount">{formatMoney(summary?.totalCollected)}</p>
-            {topCities.length > 0 ? (
-              <ul className="city-bars">
-                {topCities.map((c) => (
-                  <li key={c.cityId}>
-                    <span>{c.cityName}</span>
-                    <strong>{formatMoney(c.collected)}</strong>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="muted small">Be the first city to start a cause.</p>
-            )}
-            <Link to="/donate" className="btn btn-ghost">See all cities →</Link>
+            <p className="muted small">
+              {user ? `Collected in ${user.city.name} for community causes` : 'Collected so far for community causes'}
+            </p>
+            <p className="hero-amount">{formatMoney(amount)}</p>
+            <Link to="/donate" className="btn btn-ghost">{user ? 'Contribute or see other cities →' : 'Learn more →'}</Link>
           </div>
         </div>
       </section>
@@ -85,7 +77,7 @@ export default function HomePage() {
           <li><strong>Sign up</strong> with your name, mobile number and city.</li>
           <li><strong>Complete your profile</strong> - LinkedIn, company, role, companies you can refer to and your expertise.</li>
           <li><strong>Search</strong> by company or expertise and reach out on WhatsApp with a ready-made message.</li>
-          <li><strong>Join your city</strong> WhatsApp group, post updates and support local causes.</li>
+          <li><strong>Join your city</strong> WhatsApp group, post updates and photos, attend seminars and support local causes.</li>
         </ol>
       </section>
     </>
