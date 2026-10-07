@@ -4,5 +4,7 @@ spring:
     username: sa
     password:
 app:
+  push:
+    provider: log
   storage:
     local-path: target/test-uploads
