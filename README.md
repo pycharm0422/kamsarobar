@@ -11,7 +11,7 @@ A community platform for Kamsar o Bar. Members are grouped by city, and the plat
 
 ![Home page](docs/screenshots/01-home.png)
 
-**There is also a mobile app** for Android and iOS, with push notifications for new posts, events and event reminders. See [mobile/README.md](mobile/README.md).
+**There is also a mobile app** for Android and iOS, with push notifications for new posts, events and event reminders. It lives in its own repository: **[pycharm0422/kamsarobar-mobile](https://github.com/pycharm0422/kamsarobar-mobile)**.
 
 | Document | What's inside |
 |---|---|
@@ -177,7 +177,6 @@ kamsarobar/
 │       ├── components/          reusable UI (search, member card, WhatsApp composer...)
 │       ├── pages/               screens (and pages/admin for the dashboards)
 │       └── utils/               WhatsApp / UPI links, formatting, errors
-├── mobile/                      React Native (Expo) app for Android & iOS - see mobile/README.md
 ├── docs/                        user guide, architecture, API reference
 └── docker-compose.yml
 ```

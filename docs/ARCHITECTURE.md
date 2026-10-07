@@ -115,10 +115,10 @@ cities ─┬─< users >── managed_city (city admins)
 
 ## Mobile app
 
-`mobile/` is a React Native app built with Expo SDK 57 and Expo Router. It uses the same REST API as the website, and its API layer, link builders (WhatsApp, UPI, calendar) and photo-size rules mirror the website's.
+The mobile app is a React Native app built with Expo SDK 57 and Expo Router. It lives in its own repository, [pycharm0422/kamsarobar-mobile](https://github.com/pycharm0422/kamsarobar-mobile). It uses the same REST API as the website, and its API layer, link builders (WhatsApp, UPI, calendar) and photo-size rules mirror the website's.
 
 - The login token is kept in the phone's secure storage.
 - Push tokens are registered after login and removed on logout.
 - Tapping a notification opens the post it's about, including when the app was closed.
 
-See [mobile/README.md](../mobile/README.md).
+Setup and build instructions are in that repository's README.
