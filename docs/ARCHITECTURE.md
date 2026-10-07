@@ -25,6 +25,7 @@ Each feature is a self-contained package with its own entity, repository, servic
 | `directory` | "Who can refer me to X?" and "Who knows Y?" search |
 | `post` | Posts (text, photos, seminars and events) and comments, with ownership and moderation rules. Event attendees. `PostResponseAssembler` builds a whole page of responses with a fixed number of queries. |
 | `event` | "My upcoming events" and discovering upcoming events and seminars |
+| `notification` | Push notifications: registered phones, members' choices, who is notified about a new post or event, and the event reminder job. Sending goes through a `PushSender` interface, with an Expo implementation by default. |
 | `media` | Photo upload, validation by file contents, storage behind the `ImageStorage` interface, and an hourly cleanup of unused photos |
 | `donation` | Donations (pending → verified/rejected), campaigns, city-wise totals |
 | `city` | Cities, WhatsApp group link, bank details |
@@ -67,6 +68,7 @@ Controllers are thin (HTTP ↔ DTO). Services hold the business logic and transa
 | **Aggregations** | Donation totals are computed with `SUM … GROUP BY` **in the database**, not in Java. |
 | **Photos** | Shrunk in the **browser** to 3 MB or less before upload. That saves members' mobile data, server bandwidth and storage. The server checks the size and the real file type again. Photos are served with `Cache-Control: immutable` (cache forever), so a CDN or nginx can serve repeat views. For several backend instances, use an object-storage `ImageStorage` (S3, GCS, Cloudflare R2) or a shared volume. |
 | **Feeds** | Comment counts, attendee counts and the viewer's "going" flags for a page of posts come from **3 grouped queries in total**, not one per post. Photos are batch-fetched. |
+| **Notifications** | Sent in the **background after the post is saved** (`@Async` and `@TransactionalEventListener(AFTER_COMMIT)`), so posting stays fast. Audiences are read 500 phones at a time and sent to Expo 100 per request. Phones where the app was uninstalled are removed automatically. Reminders are claimed with a single conditional `UPDATE`, so several backend instances never send the same reminder twice. |
 | **Read-heavy data** | The city list is cached (Caffeine) and evicted on change. For several instances, set `spring.cache.type=redis` and add the Redis starter. No code change is needed. |
 | **Schema changes** | Versioned **Flyway** migrations (`db/migration/V*.sql`). Hibernate only *validates* the schema and never alters it. |
 | **Operations** | `/actuator/health` (with liveness and readiness probes for Kubernetes), graceful shutdown, a connection-pool size set by environment variable, and Docker images that run as a non-root user. |
@@ -110,3 +112,13 @@ cities ─┬─< users >── managed_city (city admins)
 - **OTP login or password reset.** Add an `OtpSender` interface (with an SMS or WhatsApp Business API implementation) and an `/api/auth/otp` flow in `auth`. The rest of the app only sees `TokenService`.
 - **Online payments.** Today money goes directly to the city bank account and the admin verifies it. To accept payments in-app, add a `PaymentGateway` interface (for example Razorpay) in `donation`. Its webhook would call the same `review(...)` method to mark a donation as verified.
 - **Notifications.** Publish Spring application events from the services (for example `DonationVerified` or `CommentAdded`) and handle them in a new `notification` package.
+
+## Mobile app
+
+`mobile/` is a React Native app built with Expo SDK 57 and Expo Router. It uses the same REST API as the website, and its API layer, link builders (WhatsApp, UPI, calendar) and photo-size rules mirror the website's.
+
+- The login token is kept in the phone's secure storage.
+- Push tokens are registered after login and removed on logout.
+- Tapping a notification opens the post it's about, including when the app was closed.
+
+See [mobile/README.md](../mobile/README.md).

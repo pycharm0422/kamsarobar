@@ -125,6 +125,21 @@ Click **Donate**. You see **your own city's fund** by default: how much has been
 
 ---
 
+### 1.8 The mobile app
+
+Everything above is also in the **Kamsar o Bar app** for Android and iPhone. It has five tabs: **Posts**, **Events**, **Find**, **Donate** and **Me**.
+
+The app can also send **notifications**:
+- new posts in your city;
+- new seminars and events;
+- a reminder about an hour before an event you added to *My upcoming events*.
+
+Tap a notification to open the post. Choose what you get under **Me → Notification settings**.
+
+<img src="screenshots/app/02-posts.png" width="240" alt="App: posts"> <img src="screenshots/app/04-my-events.png" width="240" alt="App: my events"> <img src="screenshots/app/09-notification-settings.png" width="240" alt="App: notification settings">
+
+---
+
 ## 2. For city admins (heads of an area)
 
 The main admin appoints you. When that happens, an **Admin** link appears in your menu (log out and back in if you don't see it). You manage **one city**.

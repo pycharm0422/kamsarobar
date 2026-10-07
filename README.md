@@ -11,6 +11,8 @@ A community platform for Kamsar o Bar. Members are grouped by city, and the plat
 
 ![Home page](docs/screenshots/01-home.png)
 
+**There is also a mobile app** for Android and iOS, with push notifications for new posts, events and event reminders. See [mobile/README.md](mobile/README.md).
+
 | Document | What's inside |
 |---|---|
 | [docs/USER_GUIDE.md](docs/USER_GUIDE.md) | How members, city admins and the main admin use the site, with screenshots |
@@ -26,6 +28,8 @@ A community platform for Kamsar o Bar. Members are grouped by city, and the plat
 | Backend | Java 21, Spring Boot 3.5 (Web, Security with JWT, Data JPA, Validation, Cache, Actuator), Flyway |
 | Database | PostgreSQL 16 in production. An embedded H2 database is used for local development, so you don't need to install anything. |
 | Frontend | React 19, React Router 7, Vite 8, Axios, plain CSS (responsive and mobile-friendly) |
+| Mobile app | React Native 0.86 with Expo SDK 57 (Expo Router, expo-notifications, expo-image-picker / image-manipulator, expo-secure-store) |
+| Push notifications | Expo push service (Firebase for Android, Apple for iOS), sent by the backend in the background |
 | Packaging | Docker and Docker Compose. nginx serves the React build and proxies `/api` to the backend. |
 
 ---
@@ -138,6 +142,8 @@ All settings are environment variables with safe defaults for local use (see `ba
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:5173,http://localhost:3000` | Only needed if the frontend is on a different domain than the API |
 | `PORT` | `8080` | Backend HTTP port |
 | `STORAGE_PATH` | `./data/uploads` | Folder for uploaded photos (a Docker volume in `docker-compose.yml`) |
+| `PUSH_PROVIDER` | `expo` | `expo` sends real push notifications to the mobile app; `log` only writes them to the log |
+| `EXPO_ACCESS_TOKEN` | *(empty)* | Only needed if you turn on "enhanced push security" in your Expo account |
 | `VITE_API_BASE_URL` (frontend, at build time) | `/api` | API location, if not served from the same domain |
 
 ---
@@ -155,6 +161,7 @@ kamsarobar/
 │   │   ├── post/                posts (text, photos, seminars/events) & comments
 │   │   ├── event/               "my upcoming events" & discover events
 │   │   ├── media/               photo upload, storage & cleanup
+│   │   ├── notification/        push notifications: phones, settings, who gets what, reminders
 │   │   ├── donation/            donations, campaigns, city-wise totals
 │   │   ├── city/                cities, WhatsApp group & bank details
 │   │   ├── admin/               main-admin operations
@@ -170,6 +177,7 @@ kamsarobar/
 │       ├── components/          reusable UI (search, member card, WhatsApp composer...)
 │       ├── pages/               screens (and pages/admin for the dashboards)
 │       └── utils/               WhatsApp / UPI links, formatting, errors
+├── mobile/                      React Native (Expo) app for Android & iOS - see mobile/README.md
 ├── docs/                        user guide, architecture, API reference
 └── docker-compose.yml
 ```

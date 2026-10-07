@@ -151,6 +151,23 @@ An event counts as upcoming until its end time. If it has no end time, it counts
 - Their posts and comments are hidden everywhere, including comment counts.
 - Nothing is deleted.
 
+## Push notifications (mobile app)
+
+| Method | Path | Notes |
+|---|---|---|
+| PUT | `/notifications/devices` | `{ token: "ExponentPushToken[...]", platform: "android"\|"ios" }`. Registers this phone for the logged-in member. If the phone is already registered to someone else, it moves to the current member. |
+| DELETE | `/notifications/devices?token=...` | On logout |
+| GET | `/notifications/settings` | `{ cityPosts, cityEvents, allEvents, eventReminders }` |
+| PUT | `/notifications/settings` | Same shape as GET |
+
+**Who receives what:**
+- **New post:** members living in the post's city with `cityPosts` on.
+- **New event or seminar:** members of the city with `cityEvents` on. If the event is shared with everyone, also members of other cities with `allEvents` on.
+- **Reminder:** about 60 minutes before an event the member added (`eventReminders`). Each reminder is sent once.
+- The author and blocked members are never notified.
+
+Each notification's `data` is `{ type: "post"|"event"|"reminder", postId }`. The app uses it to open the post.
+
 ## Health
 
 `GET /actuator/health`, plus `/actuator/health/liveness` and `/actuator/health/readiness`.
