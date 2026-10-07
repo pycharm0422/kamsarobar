@@ -1,13 +1,15 @@
 import { useCallback, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { CATEGORY_LABELS, fromLocalInput, isEventCategory, toLocalInput } from '../utils/format';
 import { errorMessage } from '../utils/errors';
 import Alert from './Alert';
 import ImagePicker from './ImagePicker';
 
-const EMPTY = { category: 'GENERAL', title: '', content: '', images: [], eventStartsAt: '', eventEndsAt: '', eventLocation: '', eventLink: '' };
+const EMPTY = { category: 'GENERAL', visibility: 'CITY', title: '', content: '', images: [], eventStartsAt: '', eventEndsAt: '', eventLocation: '', eventLink: '' };
 
 export const formFromPost = (post) => ({
   category: post.category,
+  visibility: post.visibility,
   title: post.title || '',
   content: post.content || '',
   images: post.images || [],
@@ -19,6 +21,7 @@ export const formFromPost = (post) => ({
 
 /** Create / edit a post: text, photos, or both - and for seminars & events, date and place. */
 export default function PostForm({ initial, onSubmit, onCancel, submitLabel = 'Post' }) {
+  const { user } = useAuth();
   const [form, setForm] = useState(initial || EMPTY);
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -38,6 +41,7 @@ export default function PostForm({ initial, onSubmit, onCancel, submitLabel = 'P
     try {
       await onSubmit({
         category: form.category,
+        visibility: form.visibility,
         title: form.title,
         content: form.content,
         imageIds: form.images.map((img) => img.id),
@@ -48,7 +52,7 @@ export default function PostForm({ initial, onSubmit, onCancel, submitLabel = 'P
           eventLink: form.eventLink,
         }),
       });
-      if (!initial) setForm({ ...EMPTY, category: form.category });
+      if (!initial) setForm({ ...EMPTY, category: form.category, visibility: form.visibility });
     } catch (err) {
       setError(errorMessage(err));
     } finally {
@@ -106,6 +110,20 @@ export default function PostForm({ initial, onSubmit, onCancel, submitLabel = 'P
         value={form.content} onChange={set('content')} />
 
       <ImagePicker images={form.images} onChange={(images) => setForm((f) => ({ ...f, images }))} onBusyChange={onBusyChange} />
+
+      <fieldset className="audience">
+        <legend>Who can see this?</legend>
+        <label className={`audience-option ${form.visibility === 'CITY' ? 'selected' : ''}`}>
+          <input type="radio" name="visibility" value="CITY" checked={form.visibility === 'CITY'}
+            onChange={() => setForm({ ...form, visibility: 'CITY' })} />
+          <span>🏙 Only {user.city.name} members</span>
+        </label>
+        <label className={`audience-option ${form.visibility === 'EVERYONE' ? 'selected' : ''}`}>
+          <input type="radio" name="visibility" value="EVERYONE" checked={form.visibility === 'EVERYONE'}
+            onChange={() => setForm({ ...form, visibility: 'EVERYONE' })} />
+          <span>🌐 Everyone, all cities</span>
+        </label>
+      </fieldset>
 
       <div className="form-actions">
         {onCancel && <button type="button" className="btn btn-ghost" onClick={onCancel}>Cancel</button>}

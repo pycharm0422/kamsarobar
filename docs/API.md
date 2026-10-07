@@ -79,13 +79,17 @@ Upload photos first, then send their ids in `imageIds` when you create or edit a
 Post body:
 
 ```json
-{ "category": "SEMINAR", "title": "Career seminar", "content": "...", "imageIds": ["<uuid>"],
+{ "category": "SEMINAR", "visibility": "CITY", "title": "Career seminar", "content": "...", "imageIds": ["<uuid>"],
   "eventStartsAt": "2026-10-12T12:00:00Z", "eventEndsAt": null,
   "eventLocation": "Community hall", "eventLink": "https://meet.google.com/..." }
 ```
 
 Categories: `GENERAL`, `JOB_OPENING`, `HELP_NEEDED`, `SEMINAR`, `EVENT`, `ANNOUNCEMENT`.
 
+- `visibility` controls who can see the post:
+  - `CITY` (the default) means only members living in the author's city.
+  - `EVERYONE` means members of all cities.
+- A post that is `CITY` and belongs to another city is filtered out of `/posts` and `/events/*`. For an outsider, `GET /posts/{id}`, its comments and its attendance endpoints return **404**, as if the post didn't exist. That city's admin, the main admin and the author can always see it.
 - A normal post needs text **or** at least one photo. The title is optional. At most 6 photos.
 - `SEMINAR` and `EVENT` posts need a `title` and a future `eventStartsAt`. The `event*` fields are ignored for other categories.
 - Times are ISO-8601 instants (UTC).

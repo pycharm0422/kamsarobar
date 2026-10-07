@@ -69,7 +69,16 @@ Open **Posts** from the menu. You see your own city's posts first. Use the dropd
 1. Optionally choose what you're posting: *General*, *Job opening*, *Help needed*, *Seminar*, *Event* or *Announcement*.
 2. Add a title if you like. It's optional for normal posts.
 3. Write your text, tap **📷 Add photos** to attach up to 6 photos, or do both.
-4. Tap **Post**. Your post goes to your city's community.
+4. Choose **Who can see this?**:
+   - **🏙 Only <your city> members** (the default): only members who live in your city can see it. Use it for local meetups, city news and anything personal to your city.
+   - **🌐 Everyone, all cities**: every member of the community can see it.
+5. Tap **Post**. Every post shows who can see it next to the date, for example *🏙 Delhi only* or *🌐 Everyone*. You can change it later with **Edit**.
+
+<img src="screenshots/mobile/18-who-can-see.png" width="300" alt="Choosing who can see a post">
+
+**Posts from other cities.** Pick another city in the dropdown to see its posts that are shared with everyone. Posts its members kept for their own city don't appear, and their links don't open for people outside that city. The same applies to their comments, and to seminars and events (you can't add another city's city-only event to your list).
+
+A city's admin can see and moderate all posts in the city they manage, and the main admin can see every post. If you move to another city, you still see your own old posts.
 
 **Photos.** You can pick photos straight from your phone's gallery or camera, whatever their size:
 

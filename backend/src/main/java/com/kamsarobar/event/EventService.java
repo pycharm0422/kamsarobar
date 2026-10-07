@@ -3,7 +3,6 @@ package com.kamsarobar.event;
 import java.time.Duration;
 import java.time.Instant;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +13,7 @@ import com.kamsarobar.common.web.PageResponse;
 import com.kamsarobar.post.EventAttendee;
 import com.kamsarobar.post.EventAttendeeRepository;
 import com.kamsarobar.post.Post;
+import com.kamsarobar.post.PostAudience;
 import com.kamsarobar.post.PostRepository;
 import com.kamsarobar.post.PostResponseAssembler;
 import com.kamsarobar.post.dto.PostResponse;
@@ -40,22 +40,19 @@ public class EventService {
 
     public PageResponse<PostResponse> myUpcoming(UserPrincipal viewer, Pageable pageable) {
         Instant now = Instant.now();
-        return assembler.toPage(postRepository.findUpcomingAttendedBy(viewer.id(), now,
+        return assembler.toPage(postRepository.findUpcomingAttended(PostAudience.of(viewer), now,
                 now.minus(DEFAULT_DURATION), pageable), viewer);
     }
 
     public PageResponse<PostResponse> upcoming(Long cityId, UserPrincipal viewer, Pageable pageable) {
         Instant now = Instant.now();
-        Instant startedAfter = now.minus(DEFAULT_DURATION);
-        Page<Post> page = cityId == null
-                ? postRepository.findUpcoming(now, startedAfter, pageable)
-                : postRepository.findUpcomingInCity(cityId, now, startedAfter, pageable);
-        return assembler.toPage(page, viewer);
+        return assembler.toPage(postRepository.findUpcoming(cityId, PostAudience.of(viewer), now,
+                now.minus(DEFAULT_DURATION), pageable), viewer);
     }
 
     @Transactional
     public PostResponse attend(Long postId, UserPrincipal viewer) {
-        Post post = getEvent(postId);
+        Post post = getEvent(postId, viewer);
         if (post.hasEnded(Instant.now())) {
             throw new BadRequestException("This event has already ended");
         }
@@ -68,14 +65,15 @@ public class EventService {
 
     @Transactional
     public PostResponse leave(Long postId, UserPrincipal viewer) {
-        Post post = getEvent(postId);
+        Post post = getEvent(postId, viewer);
         attendeeRepository.deleteById(new EventAttendee.Key(postId, viewer.id()));
         attendeeRepository.flush();
         return assembler.toResponse(post, viewer);
     }
 
-    private Post getEvent(Long postId) {
+    private Post getEvent(Long postId, UserPrincipal viewer) {
         Post post = postRepository.findWithAuthorById(postId)
+                .filter(p -> PostAudience.of(viewer).canSee(p))
                 .orElseThrow(() -> new ResourceNotFoundException("Post", postId));
         if (!post.isEvent()) {
             throw new BadRequestException("This post is not an event");

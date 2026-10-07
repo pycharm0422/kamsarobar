@@ -83,8 +83,13 @@ export default function PostsPage() {
           <Alert onClose={() => setError('')}>{error}</Alert>
           <div className="card">
             <PostForm onSubmit={createPost} />
-            <p className="muted small composer-note">Your post goes to the {user.city.name} community.</p>
+
           </div>
+          {cityId && cityId !== String(user.city.id) && city && (
+            <p className="muted small other-city-note">
+              Showing {city.name} posts that are shared with everyone. Posts meant only for {city.name} members are not shown.
+            </p>
+          )}
           {!feed ? (
             <Spinner />
           ) : feed.content.length === 0 ? (

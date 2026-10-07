@@ -41,6 +41,10 @@ export default function PostCard({ post, onUpdate, onDelete, onChange, full = fa
             {' '}· {post.city?.name} ·{' '}
             {full ? formatDateTime(post.createdAt) : <Link to={`/posts/${post.id}`} className="muted">{formatDateTime(post.createdAt)}</Link>}
             {wasEdited(post) && ' · edited'}
+            {' · '}
+            <span title={post.visibility === 'EVERYONE' ? 'Visible to members of every city' : `Visible only to ${post.city?.name} members`}>
+              {post.visibility === 'EVERYONE' ? '🌐 Everyone' : `🏙 ${post.city?.name} only`}
+            </span>
           </span>
         </div>
         {post.category !== 'GENERAL' && (

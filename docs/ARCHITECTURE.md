@@ -86,6 +86,7 @@ Next steps when traffic grows:
   - City admins can moderate their own city and manage its settings, donations and causes.
   - The main admin can do everything.
   - `/api/admin/**` is restricted with `@PreAuthorize("hasRole('MAIN_ADMIN')")`.
+- Post visibility ("only my city" or "everyone") is enforced on the server, never just hidden in the page. The rule lives in one class, `PostAudience`. It provides a Java check for single posts and the matching query filter, so feed, event and comment requests never load a post the viewer may not see. A post that's hidden from someone returns 404, so its existence doesn't leak.
 - Input is validated with Bean Validation, for example on WhatsApp links, IFSC codes, UPI IDs, LinkedIn URLs and amount limits. LIKE wildcards in search terms are escaped.
 - Mobile numbers are visible only to logged-in members. Members can opt out of search.
 
