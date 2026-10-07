@@ -4,7 +4,7 @@ A community platform for Kamsar o Bar. Members are grouped by city, and the plat
 
 - **Get referred.** Saw a job? Type the company name, find members who can refer you, and send them a ready-made WhatsApp message in one tap.
 - **Ask an expert.** Search members by expertise (career, technology, exams, business, health...) and message them for advice.
-- **Post anything.** Members share text and photos with their city. Photos are shrunk in the browser to 3 MB or less, without distortion.
+- **Post anything.** Members share text and photos, choosing for each post whether only their own city's members see it or everyone in all cities. Photos are shrunk in the browser to 3 MB or less, without distortion.
 - **Seminars and events.** Members post seminars and events, and others tap **Add to my events** to keep them in their *My upcoming events* list (with Google, phone and Outlook calendar export).
 - **Join their city circle.** Each city has a WhatsApp group link managed by a city admin.
 - **Give back.** Members make small donations to their city's bank or UPI account. Each member sees their own city's total by default, and can pick any other city to see its total.
@@ -113,7 +113,7 @@ cd backend
 mvn test
 ```
 
-The tests include end-to-end integration tests. One covers registration, both profile forms, referral and expert search, posts and comments, appointing a city admin, city settings and donation verification. The other covers photo upload and validation, photo-only posts, seminars, "add to my events" and per-city donation totals.
+The tests include end-to-end integration tests. One covers registration, both profile forms, referral and expert search, posts and comments, appointing a city admin, city settings and donation verification. Another covers photo upload and validation, photo-only posts, seminars, "add to my events" and per-city donation totals. A third checks that "only my city" posts stay hidden from other cities everywhere: the feed, direct links, comments and events. A fourth covers admins viewing member profiles and blocking or unblocking members: who may block whom, immediate logout, and hidden content and search results.
 
 ```bash
 cd frontend

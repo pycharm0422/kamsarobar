@@ -79,13 +79,17 @@ Upload photos first, then send their ids in `imageIds` when you create or edit a
 Post body:
 
 ```json
-{ "category": "SEMINAR", "title": "Career seminar", "content": "...", "imageIds": ["<uuid>"],
+{ "category": "SEMINAR", "visibility": "CITY", "title": "Career seminar", "content": "...", "imageIds": ["<uuid>"],
   "eventStartsAt": "2026-10-12T12:00:00Z", "eventEndsAt": null,
   "eventLocation": "Community hall", "eventLink": "https://meet.google.com/..." }
 ```
 
 Categories: `GENERAL`, `JOB_OPENING`, `HELP_NEEDED`, `SEMINAR`, `EVENT`, `ANNOUNCEMENT`.
 
+- `visibility` controls who can see the post:
+  - `CITY` (the default) means only members living in the author's city.
+  - `EVERYONE` means members of all cities.
+- A post that is `CITY` and belongs to another city is filtered out of `/posts` and `/events/*`. For an outsider, `GET /posts/{id}`, its comments and its attendance endpoints return **404**, as if the post didn't exist. That city's admin, the main admin and the author can always see it.
 - A normal post needs text **or** at least one photo. The title is optional. At most 6 photos.
 - `SEMINAR` and `EVENT` posts need a `title` and a future `eventStartsAt`. The `event*` fields are ignored for other categories.
 - Times are ISO-8601 instants (UTC).
@@ -130,6 +134,22 @@ An event counts as upcoming until its end time. If it has no end time, it counts
 | GET | `/admin/city-admins` | |
 | POST | `/admin/city-admins` | `{ userId, cityId }`: appoint the head of a city |
 | DELETE | `/admin/city-admins/{userId}` | Revoke |
+
+## Member management (main admin: all cities · city admin: own city)
+
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/admin/members?q=&cityId=&status=ACTIVE\|BLOCKED&page=` | Lists members. For a city admin, results are limited to the city they manage, and asking for another city returns 403. |
+| GET | `/admin/members/{id}` | `{ member, profile, activity: { posts, comments, donations, donatedVerified, eventsAdded }, block: { blocked, reason, blockedAt, blockedBy }, canBlock }` |
+| POST | `/admin/members/{id}/block` | `{ reason }` (required). Who can block: the main admin can block anyone but themselves; a city admin can block ordinary members of their own city. Nobody can block the main admin. |
+| DELETE | `/admin/members/{id}/block` | Unblock, which restores everything |
+
+**What blocking does:**
+- The member's existing login stops working at once (401), and logging in returns 403 with a "blocked" message.
+- Registering again with the same number returns 409.
+- They're left out of directory search.
+- Their posts and comments are hidden everywhere, including comment counts.
+- Nothing is deleted.
 
 ## Health
 

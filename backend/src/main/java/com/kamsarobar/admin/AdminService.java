@@ -55,7 +55,7 @@ public class AdminService {
     public PageResponse<UserResponse> searchUsers(String query, Long cityId, Pageable pageable) {
         String key = TextNormalizer.key(query);
         String pattern = key == null ? null : TextNormalizer.likeContains(key);
-        return PageResponse.of(userRepository.search(cityId, pattern, pageable), UserResponse::from);
+        return PageResponse.of(userRepository.search(cityId, null, pattern, pageable), UserResponse::from);
     }
 
     public List<UserResponse> cityAdmins() {

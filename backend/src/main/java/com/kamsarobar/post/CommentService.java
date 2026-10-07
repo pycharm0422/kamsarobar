@@ -30,15 +30,15 @@ public class CommentService {
     }
 
     public PageResponse<CommentResponse> list(Long postId, Pageable pageable, UserPrincipal viewer) {
-        Post post = postService.getEntity(postId);
+        Post post = postService.getVisibleEntity(postId, viewer);
         Long cityId = post.getCity().getId();
-        return PageResponse.of(commentRepository.findByPostIdOrderByCreatedAtAsc(postId, pageable),
+        return PageResponse.of(commentRepository.findVisibleByPostId(postId, pageable),
                 c -> CommentResponse.from(c, accessPolicy.canModifyContent(viewer, c.getAuthor().getId(), cityId)));
     }
 
     @Transactional
     public CommentResponse add(Long postId, CommentRequest request, UserPrincipal actor) {
-        Post post = postService.getEntity(postId);
+        Post post = postService.getVisibleEntity(postId, actor);
         Comment comment = commentRepository.save(
                 new Comment(post, userService.getEntity(actor.id()), request.content().trim()));
         return CommentResponse.from(comment, true);

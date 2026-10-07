@@ -47,4 +47,12 @@ public interface DonationRepository extends JpaRepository<Donation, Long> {
             where d.status = com.kamsarobar.donation.DonationStatus.VERIFIED
             """)
     BigDecimal totalVerified();
+
+    long countByDonorId(Long donorId);
+
+    @Query("""
+            select coalesce(sum(d.amount), 0) from Donation d
+            where d.donor.id = :donorId and d.status = com.kamsarobar.donation.DonationStatus.VERIFIED
+            """)
+    BigDecimal totalVerifiedByDonor(@Param("donorId") Long donorId);
 }

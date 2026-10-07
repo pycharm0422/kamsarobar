@@ -9,6 +9,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface EventAttendeeRepository extends JpaRepository<EventAttendee, EventAttendee.Key> {
 
+    long countByUserId(Long userId);
+
     /** Rows of [postId, count] for a page of posts, in one query. */
     @Query("select a.postId, count(a) from EventAttendee a where a.postId in :postIds group by a.postId")
     List<Object[]> countByPostIds(@Param("postIds") Collection<Long> postIds);

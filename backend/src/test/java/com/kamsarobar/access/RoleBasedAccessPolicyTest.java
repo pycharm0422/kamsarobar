@@ -30,4 +30,19 @@ class RoleBasedAccessPolicyTest {
         assertThat(policy.canModifyContent(cityAdmin, 99L, 10L)).isTrue();
         assertThat(policy.canModifyContent(cityAdmin, 99L, 11L)).isFalse();
     }
+
+    @Test
+    void blockingRules() {
+        // main admin: anyone but themselves; never another main admin
+        assertThat(policy.canBlockMember(mainAdmin, 1L, Role.MEMBER, 99L)).isTrue();
+        assertThat(policy.canBlockMember(mainAdmin, 2L, Role.CITY_ADMIN, 10L)).isTrue();
+        assertThat(policy.canBlockMember(mainAdmin, 3L, Role.MAIN_ADMIN, 10L)).isFalse();
+        // city admin: ordinary members of their own city only
+        assertThat(policy.canBlockMember(cityAdmin, 1L, Role.MEMBER, 10L)).isTrue();
+        assertThat(policy.canBlockMember(cityAdmin, 1L, Role.MEMBER, 11L)).isFalse();
+        assertThat(policy.canBlockMember(cityAdmin, 5L, Role.CITY_ADMIN, 10L)).isFalse();
+        assertThat(policy.canBlockMember(cityAdmin, 2L, Role.MEMBER, 10L)).isFalse(); // themselves
+        // members: nobody
+        assertThat(policy.canBlockMember(member, 7L, Role.MEMBER, 10L)).isFalse();
+    }
 }

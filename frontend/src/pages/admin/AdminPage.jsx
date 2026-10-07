@@ -18,14 +18,20 @@ export default function AdminPage() {
   const { user, isMainAdmin } = useAuth();
   const [tab, setTab] = useState('overview');
 
+  const [cityTab, setCityTab] = useState('city');
+
   if (!isMainAdmin) {
     return (
       <div className="container page">
         <div className="page-header">
           <h1>{user.managedCity?.name} - city admin</h1>
-          <p className="muted">Manage your city’s WhatsApp group, bank details, causes and donations.</p>
+          <p className="muted">Manage your city’s members, WhatsApp group, bank details, causes and donations.</p>
         </div>
-        <CityManagePanel fixedCityId={user.managedCity?.id} />
+        <div className="tabs">
+          <button className={`tab ${cityTab === 'city' ? 'active' : ''}`} onClick={() => setCityTab('city')}>Manage city</button>
+          <button className={`tab ${cityTab === 'members' ? 'active' : ''}`} onClick={() => setCityTab('members')}>Members</button>
+        </div>
+        {cityTab === 'city' ? <CityManagePanel fixedCityId={user.managedCity?.id} /> : <MembersPanel fixedCityId={user.managedCity?.id} />}
       </div>
     );
   }

@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 
 import com.kamsarobar.post.PostCategory;
+import com.kamsarobar.post.PostVisibility;
 
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -14,6 +15,8 @@ import jakarta.validation.constraints.Size;
  */
 public record PostRequest(
         PostCategory category,
+        /** CITY (default) = only members living in the author's city; EVERYONE = all cities. */
+        PostVisibility visibility,
         @Size(max = 200) String title,
         @Size(max = 5000) String content,
         @Size(max = 6, message = "You can add at most 6 photos") List<String> imageIds,

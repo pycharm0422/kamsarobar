@@ -19,14 +19,14 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long> 
     @EntityGraph(attributePaths = {"user", "user.city"})
     @Query(value = """
             select p from UserProfile p
-            where p.openToHelp = true and p.user.id <> :viewerId
+            where p.openToHelp = true and p.user.blocked = false and p.user.id <> :viewerId
               and exists (select 1 from UserProfile p2 join p2.referralCompanies c
                           where p2 = p and c.normalizedName like :pattern escape '\\')
             order by p.user.name asc
             """,
             countQuery = """
             select count(p) from UserProfile p
-            where p.openToHelp = true and p.user.id <> :viewerId
+            where p.openToHelp = true and p.user.blocked = false and p.user.id <> :viewerId
               and exists (select 1 from UserProfile p2 join p2.referralCompanies c
                           where p2 = p and c.normalizedName like :pattern escape '\\')
             """)
@@ -36,14 +36,14 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long> 
     @EntityGraph(attributePaths = {"user", "user.city"})
     @Query(value = """
             select p from UserProfile p
-            where p.openToHelp = true and p.user.id <> :viewerId and p.user.city.id = :cityId
+            where p.openToHelp = true and p.user.blocked = false and p.user.id <> :viewerId and p.user.city.id = :cityId
               and exists (select 1 from UserProfile p2 join p2.referralCompanies c
                           where p2 = p and c.normalizedName like :pattern escape '\\')
             order by p.user.name asc
             """,
             countQuery = """
             select count(p) from UserProfile p
-            where p.openToHelp = true and p.user.id <> :viewerId and p.user.city.id = :cityId
+            where p.openToHelp = true and p.user.blocked = false and p.user.id <> :viewerId and p.user.city.id = :cityId
               and exists (select 1 from UserProfile p2 join p2.referralCompanies c
                           where p2 = p and c.normalizedName like :pattern escape '\\')
             """)
@@ -55,14 +55,14 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long> 
     @EntityGraph(attributePaths = {"user", "user.city"})
     @Query(value = """
             select p from UserProfile p
-            where p.openToHelp = true and p.user.id <> :viewerId
+            where p.openToHelp = true and p.user.blocked = false and p.user.id <> :viewerId
               and exists (select 1 from UserProfile p2 join p2.skills s
                           where p2 = p and s.normalizedName like :pattern escape '\\')
             order by p.user.name asc
             """,
             countQuery = """
             select count(p) from UserProfile p
-            where p.openToHelp = true and p.user.id <> :viewerId
+            where p.openToHelp = true and p.user.blocked = false and p.user.id <> :viewerId
               and exists (select 1 from UserProfile p2 join p2.skills s
                           where p2 = p and s.normalizedName like :pattern escape '\\')
             """)
@@ -72,14 +72,14 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, Long> 
     @EntityGraph(attributePaths = {"user", "user.city"})
     @Query(value = """
             select p from UserProfile p
-            where p.openToHelp = true and p.user.id <> :viewerId and p.user.city.id = :cityId
+            where p.openToHelp = true and p.user.blocked = false and p.user.id <> :viewerId and p.user.city.id = :cityId
               and exists (select 1 from UserProfile p2 join p2.skills s
                           where p2 = p and s.normalizedName like :pattern escape '\\')
             order by p.user.name asc
             """,
             countQuery = """
             select count(p) from UserProfile p
-            where p.openToHelp = true and p.user.id <> :viewerId and p.user.city.id = :cityId
+            where p.openToHelp = true and p.user.blocked = false and p.user.id <> :viewerId and p.user.city.id = :cityId
               and exists (select 1 from UserProfile p2 join p2.skills s
                           where p2 = p and s.normalizedName like :pattern escape '\\')
             """)

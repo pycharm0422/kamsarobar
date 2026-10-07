@@ -49,6 +49,11 @@ public class Post {
     @Column(nullable = false)
     private PostCategory category;
 
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(nullable = false)
+    private PostVisibility visibility = PostVisibility.CITY;
+
     private String title;
 
     private String content;
@@ -96,6 +101,14 @@ public class Post {
         this.eventEndsAt = endsAt;
         this.eventLocation = location;
         this.eventLink = link;
+    }
+
+    public PostVisibility getVisibility() {
+        return visibility;
+    }
+
+    public void setVisibility(PostVisibility visibility) {
+        this.visibility = visibility;
     }
 
     public boolean isEvent() {
