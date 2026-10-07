@@ -36,6 +36,8 @@ Edit `.env`:
   - The Android emulator on the same computer: `http://10.0.2.2:8080/api`
 - `EXPO_PUBLIC_WEB_URL` is your website address, used for the admin panel link.
 
+**You can also change the server inside the app.** On the login screen, tap **Server: … Change**. Type your site's address (e.g. `https://kamsarobar.in`) or, for testing, your PC's Wi-Fi address and port (e.g. `192.168.1.5:8080`), then tap **Save & test**. The app checks that the server answers, then remembers it. This means one APK works with any backend.
+
 ## 2. See it quickly in a browser
 
 ```bash

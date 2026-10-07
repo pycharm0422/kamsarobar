@@ -1,12 +1,12 @@
 import { Platform } from 'react-native';
 import { tokenStorage } from '../auth/tokenStorage';
-import { API_URL } from '../config';
+import { getApiUrl } from '../config';
 import client from './client';
 
 // One small API object per resource (same shape as the website's), so screens depend only on what they use.
 const data = (request) => request.then((response) => response.data);
 
-export const imageUrl = (image) => `${API_URL}${image.url}`;
+export const imageUrl = (image) => `${getApiUrl()}${image.url}`;
 
 export const authApi = {
   register: (body) => data(client.post('/auth/register', body)),
@@ -81,7 +81,7 @@ export async function uploadImage({ uri, name, type }) {
   } else {
     form.append('file', { uri, name, type });
   }
-  const response = await fetch(`${API_URL}/images`, {
+  const response = await fetch(`${getApiUrl()}/images`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${tokenStorage.current()}` },
     body: form,

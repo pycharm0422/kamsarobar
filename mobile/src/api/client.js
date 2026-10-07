@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { tokenStorage } from '../auth/tokenStorage';
-import { API_URL } from '../config';
+import { getApiUrl } from '../config';
 
-const client = axios.create({ baseURL: API_URL, timeout: 20000 });
+const client = axios.create({ timeout: 20000 });
 
 let onUnauthorized = () => {};
 
@@ -12,6 +12,7 @@ export function setUnauthorizedHandler(handler) {
 }
 
 client.interceptors.request.use((config) => {
+  config.baseURL = getApiUrl(); // the server can be changed on the login screen
   const token = tokenStorage.current();
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;

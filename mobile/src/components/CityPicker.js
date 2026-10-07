@@ -1,8 +1,8 @@
 import { useCities } from '../hooks/useCities';
 import OptionPicker from './OptionPicker';
 
-export default function CityPicker({ label, value, onChange, allLabel, compact }) {
-  const cities = useCities();
+export default function CityPicker({ label, value, onChange, allLabel, compact, reloadKey }) {
+  const cities = useCities(reloadKey);
   const options = [
     ...(allLabel ? [{ value: '', label: allLabel }] : []),
     ...cities.map((c) => ({ value: String(c.id), label: c.state ? `${c.name}, ${c.state}` : c.name })),

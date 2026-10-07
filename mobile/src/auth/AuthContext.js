@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { Platform } from 'react-native';
 import { authApi, notificationApi, userApi } from '../api';
 import { setUnauthorizedHandler } from '../api/client';
+import { loadApiUrl } from '../config';
 import { getPushToken } from '../notifications/push';
 import { tokenStorage } from './tokenStorage';
 
@@ -30,6 +31,7 @@ export function AuthProvider({ children }) {
     setUnauthorizedHandler(signOutLocally); // expired or blocked: back to the login screen
     (async () => {
       try {
+        await loadApiUrl();
         if (await tokenStorage.load()) {
           setUser(await userApi.me());
           registerPush();

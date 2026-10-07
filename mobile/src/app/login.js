@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../auth/AuthContext';
+import ServerSetting from '../components/ServerSetting';
 import { Button, Card, ErrorBanner, Field } from '../components/ui';
 import { colors, common } from '../theme';
 import { errorMessage } from '../utils/errors';
@@ -45,6 +46,7 @@ export default function LoginScreen() {
               New here? <Link href="/register" style={{ color: colors.primary, fontWeight: '700' }}>Create an account</Link>
             </Text>
           </Card>
+          <ServerSetting />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
