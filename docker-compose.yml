@@ -1,0 +1,51 @@
+# One command to run everything:  docker compose up --build
+# Then open http://localhost:3000
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: kamsarobar
+      POSTGRES_USER: kamsarobar
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-kamsarobar}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kamsarobar -d kamsarobar"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:postgresql://db:5432/kamsarobar
+      DB_USERNAME: kamsarobar
+      DB_PASSWORD: ${DB_PASSWORD:-kamsarobar}
+      JWT_SECRET: ${JWT_SECRET:-please-change-this-secret-in-production-0123456789}
+      ADMIN_NAME: ${ADMIN_NAME:-Main Admin}
+      ADMIN_MOBILE: ${ADMIN_MOBILE:-9999999999}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin@123}
+      ADMIN_CITY: ${ADMIN_CITY:-Ghazipur}
+      STORAGE_PATH: /app/uploads
+    volumes:
+      - uploads:/app/uploads
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+
+volumes:
+  db-data:
+  uploads:

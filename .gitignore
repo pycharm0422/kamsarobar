@@ -1,0 +1,20 @@
+# Backend
+backend/target/
+backend/data/
+*.class
+*.log
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+
+# Environment / secrets
+.env
+
+# IDE / OS
+.idea/
+*.iml
+.vscode/
+.DS_Store

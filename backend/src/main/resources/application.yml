@@ -1,0 +1,87 @@
+server:
+  port: ${PORT:8080}
+  shutdown: graceful
+
+spring:
+  application:
+    name: kamsarobar
+  profiles:
+    # "dev" uses an embedded H2 database so you can run without installing PostgreSQL.
+    default: dev
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        default_batch_fetch_size: 50
+  flyway:
+    enabled: true
+  servlet:
+    multipart:
+      # Photos are resized in the browser to <= 3 MB before upload; the server enforces the same limit.
+      max-file-size: 3MB
+      max-request-size: 4MB
+  cache:
+    cache-names: cities
+    caffeine:
+      spec: maximumSize=500,expireAfterWrite=10m
+
+app:
+  jwt:
+    # Override with the JWT_SECRET environment variable in production (min. 32 characters).
+    secret: ${JWT_SECRET:change-me-this-is-a-dev-only-secret-key-1234567890}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:10080}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
+  bootstrap-admin:
+    name: ${ADMIN_NAME:Main Admin}
+    mobile: ${ADMIN_MOBILE:9999999999}
+    password: ${ADMIN_PASSWORD:admin@123}
+    city: ${ADMIN_CITY:Ghazipur}
+  phone:
+    default-country-code: ${DEFAULT_COUNTRY_CODE:91}
+  storage:
+    # Where uploaded photos are kept (a Docker volume in docker-compose.yml).
+    local-path: ${STORAGE_PATH:./data/uploads}
+    max-image-bytes: 3145728
+    max-images-per-post: 6
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:h2:file:./data/kamsarobar;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;AUTO_SERVER=TRUE
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/kamsarobar}
+    username: ${DB_USERNAME:kamsarobar}
+    password: ${DB_PASSWORD:kamsarobar}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:20}
