@@ -108,8 +108,8 @@ class MemberAdminIntegrationTest {
                 .andExpect(jsonPath("$.content[*].id", hasItem((int) spammerId)))
                 .andExpect(jsonPath("$.content[*].id", not(hasItem((int) memberId))));
 
-        // A city admin cannot block another admin; the main admin can block a city admin.
-        call(post("/api/admin/city-admins"), admin, Map.of("userId", memberId, "cityId", lucknow))
+        // A city admin cannot block another admin (here the admin of Noida who lives in Lucknow).
+        call(post("/api/admin/city-admins"), admin, Map.of("userId", memberId, "cityId", noida))
                 .andExpect(status().isOk());
         call(post("/api/admin/members/" + memberId + "/block"), head, Map.of("reason", "x"))
                 .andExpect(status().isForbidden());

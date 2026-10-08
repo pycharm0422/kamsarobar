@@ -168,8 +168,13 @@ function BasicForm() {
       </div>
       <div className="field">
         <label htmlFor="city">City</label>
-        <CitySelect id="city" required value={form.cityId} onChange={(v) => setForm({ ...form, cityId: v })} />
-        <small className="muted">Moving cities? Change it here and you will join that city’s community.</small>
+        <CitySelect id="city" required value={form.cityId} disabled={user.role === 'CITY_ADMIN'}
+          onChange={(v) => setForm({ ...form, cityId: v })} />
+        <small className="muted">
+          {user.role === 'CITY_ADMIN'
+            ? `You are the admin of ${user.managedCity?.name}, so only the main admin can change your city.`
+            : 'Moving cities? Change it here and you will join that city’s community.'}
+        </small>
       </div>
       <div className="form-actions">
         <button className="btn btn-primary" disabled={busy}>{busy ? 'Saving...' : 'Save'}</button>

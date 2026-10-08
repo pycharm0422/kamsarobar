@@ -321,3 +321,4 @@ textarea { resize: vertical; }
 .block-card.blocked { border-color: #fecaca; background: #fef2f2; }
 .btn-danger { background: var(--danger); color: #fff; }
 .btn-danger:hover:not(:disabled) { background: #b91c1c; }
+select:disabled, input:disabled { background: #f3f4f6; color: var(--muted); cursor: not-allowed; }

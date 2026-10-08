@@ -29,7 +29,7 @@ Each feature is a self-contained package with its own entity, repository, servic
 | `media` | Photo upload, validation by file contents, storage behind the `ImageStorage` interface, and an hourly cleanup of unused photos |
 | `donation` | Donations (pending → verified/rejected), campaigns, city-wise totals |
 | `city` | Cities, WhatsApp group link, bank details |
-| `admin` | Main admin operations: appoint or revoke city admins, manage cities, list members |
+| `admin` | Main admin operations: appoint or revoke city admins (one per city), move members between cities, manage cities, list members |
 | `access` | **All authorisation rules in one place** |
 | `security` | JWT filter and token service |
 | `common` | Error handling, paging, text and phone normalisation |
@@ -85,7 +85,7 @@ Next steps when traffic grows:
 - The user is reloaded from the database on every request (a primary-key lookup), so **revoking a city admin takes effect immediately** instead of waiting for the token to expire.
 - Authorisation rules:
   - Authors can change their own posts and comments.
-  - City admins can moderate their own city and manage its settings, donations and causes.
+  - City admins can moderate their own city and manage its settings, donations and causes. They can't change their own city; only the main admin can move them.
   - The main admin can do everything.
   - `/api/admin/**` is restricted with `@PreAuthorize("hasRole('MAIN_ADMIN')")`.
 - **Blocking** is checked on every request. The JWT filter reloads the user and refuses blocked accounts, so a block takes effect immediately rather than when the token expires. The block rule is in `AccessPolicy.canBlockMember`. Hiding a blocked member's content uses the same `PostAudience` filter and comment queries, so it's reversible and nothing is deleted.

@@ -8,7 +8,7 @@ import com.kamsarobar.user.dto.UserResponse;
 
 /** Everything an admin sees on a member's page. */
 public record MemberDetails(UserResponse member, ProfileResponse profile, Activity activity, BlockInfo block,
-                            boolean canBlock) {
+                            boolean canBlock, boolean canChangeCity) {
 
     public record Activity(long posts, long comments, long donations, BigDecimal donatedVerified,
                            long eventsAdded) {

@@ -43,4 +43,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
                       @Param("pattern") String pattern, Pageable pageable);
 
     long countByCityId(Long cityId);
+
+    List<User> findByRoleAndManagedCityId(Role role, Long managedCityId);
 }

@@ -6,8 +6,10 @@ Errors always have this shape:
 
 ```json
 { "timestamp": "...", "status": 400, "error": "Bad Request", "message": "Validation failed",
-  "fieldErrors": { "mobile": "Please enter a valid mobile number" } }
+  "fieldErrors": { "mobile": "Please enter a valid mobile number" }, "code": null }
 ```
+
+`code` is set for errors a client may want to handle specially. Today the only one is `CITY_HAS_ADMIN` (see *Main admin*).
 
 Paginated responses look like this:
 
@@ -29,7 +31,7 @@ Query parameters for paging are `page` (0-based) and `size` (maximum 50).
 | Method | Path | Body |
 |---|---|---|
 | GET | `/users/me` | |
-| PUT | `/users/me` | `{ name, mobile, cityId }`: edit form 1 |
+| PUT | `/users/me` | `{ name, mobile, cityId }`: edit form 1. A city admin who sends a different `cityId` gets **403**; only the main admin can move them. |
 | PUT | `/users/me/password` | `{ currentPassword, newPassword }` |
 | GET | `/profile/me` | |
 | PUT | `/profile/me` | Form 2: `{ linkedinUrl, currentCompany, position, yearsOfExperience, bio, openToHelp, referralCompanies: [..], expertise: [..] }` |
@@ -133,15 +135,18 @@ An event counts as upcoming until its end time. If it has no end time, it counts
 | PUT | `/admin/cities/{id}` | `{ name, state, active }` |
 | GET | `/admin/users?q=&cityId=&page=` | Search members |
 | GET | `/admin/city-admins` | |
-| POST | `/admin/city-admins` | `{ userId, cityId }`: appoint the head of a city |
+| POST | `/admin/city-admins` | `{ userId, cityId, replaceExistingAdmin }`: appoint the head of a city |
 | DELETE | `/admin/city-admins/{userId}` | Revoke |
+| PUT | `/admin/members/{userId}/city` | `{ cityId, replaceExistingAdmin }`: move a member to another city. A city admin moves together with their admin role. |
+
+**One admin per city.** If the target city already has a different admin, appointing or moving a city admin there returns **409** with `"code": "CITY_HAS_ADMIN"` and a message naming the current admin. Send the same request again with `"replaceExistingAdmin": true` to go ahead: the current admin becomes an ordinary member. Moving a city admin away leaves their old city without an admin. Moving an ordinary member never conflicts.
 
 ## Member management (main admin: all cities · city admin: own city)
 
 | Method | Path | Notes |
 |---|---|---|
 | GET | `/admin/members?q=&cityId=&status=ACTIVE\|BLOCKED&page=` | Lists members. For a city admin, results are limited to the city they manage, and asking for another city returns 403. |
-| GET | `/admin/members/{id}` | `{ member, profile, activity: { posts, comments, donations, donatedVerified, eventsAdded }, block: { blocked, reason, blockedAt, blockedBy }, canBlock }` |
+| GET | `/admin/members/{id}` | `{ member, profile, activity: { posts, comments, donations, donatedVerified, eventsAdded }, block: { blocked, reason, blockedAt, blockedBy }, canBlock, canChangeCity }` |
 | POST | `/admin/members/{id}/block` | `{ reason }` (required). Who can block: the main admin can block anyone but themselves; a city admin can block ordinary members of their own city. Nobody can block the main admin. |
 | DELETE | `/admin/members/{id}/block` | Unblock, which restores everything |
 

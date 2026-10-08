@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.kamsarobar.admin.dto.AdminStats;
 import com.kamsarobar.admin.dto.AssignCityAdminRequest;
+import com.kamsarobar.admin.dto.ChangeCityRequest;
 import com.kamsarobar.city.CityService;
 import com.kamsarobar.city.dto.CityRequest;
 import com.kamsarobar.city.dto.CitySummary;
@@ -79,7 +80,13 @@ public class AdminController {
 
     @PostMapping("/city-admins")
     public UserResponse assignCityAdmin(@Valid @RequestBody AssignCityAdminRequest request) {
-        return adminService.assignCityAdmin(request.userId(), request.cityId());
+        return adminService.assignCityAdmin(request.userId(), request.cityId(), request.replaceExistingAdmin());
+    }
+
+    /** Move a member - including a city admin, who then heads the new city - to another city. */
+    @PutMapping("/members/{userId}/city")
+    public UserResponse changeMemberCity(@PathVariable Long userId, @Valid @RequestBody ChangeCityRequest request) {
+        return adminService.changeMemberCity(userId, request.cityId(), request.replaceExistingAdmin());
     }
 
     @DeleteMapping("/city-admins/{userId}")

@@ -37,7 +37,7 @@ Right after joining you see **Step 2 of 2**. Fill this in so other members can f
 **Everything is editable.** Go to **Profile** at any time:
 
 - **Work & referrals** tab: form 2.
-- **Basic info** tab: change your name, mobile number or city (for example, if you move to another city).
+- **Basic info** tab: change your name, mobile number or city (for example, if you move to another city). City admins can't change their own city here; see 2.6.
 - **Password** tab: change your password.
 
 ### 1.3 Find someone who can refer you
@@ -194,6 +194,10 @@ City admins can block ordinary members of their own city. Other admins can be bl
 
 As city admin you can **edit or delete any post, photo or comment in your city**.
 
+### 2.6 Your own city is locked
+
+You are the head of one city, so you **can't change your own city** under *Profile → Basic info*. The city field is greyed out. You can still change your name, mobile number and password. If you move, ask the main admin to move you (see 3.1).
+
 ---
 
 ## 3. For the main admin
@@ -205,12 +209,24 @@ Log in with the main admin account (see the README for the first-login details) 
 | Tab | What you can do |
 |---|---|
 | **Overview** | Number of members, cities, city admins and posts, and the total collected |
-| **City admins** | **Appoint a city admin.** Search a member by name or mobile, choose the city they will head, and click **Make city admin**. **Remove** takes the role away. The change applies immediately. |
+| **City admins** | **Appoint a city admin.** Search a member by name or mobile, choose the city they will head, and click **Make city admin**. **Remove** takes the role away. The change applies immediately. Each city has one admin; see 3.1. |
 | **Manage a city** | Do anything a city admin can (settings, donations, causes) for **any** city |
 | **Cities** | Add new cities, rename them, or hide a city (hidden cities disappear from the sign-up list) |
 | **Members** | Every member in every city. Search by name or mobile, and filter by city and by *Active* or *Blocked*. Tap a name for the full profile and activity, and to **block or unblock** anyone, including city admins (see 2.4). |
 
 As main admin you can also moderate posts and comments in every city.
+
+### 3.1 Moving members and city admins
+
+Only the main admin can change a city admin's city. Open **Members**, tap the person, and use the **City** card: pick the new city under *Lives in* and tap **Move**. You can move ordinary members the same way.
+
+**One admin per city.** Each city has exactly one admin.
+
+| What you do | What happens |
+|---|---|
+| Move an **ordinary member** | Only the city they live in changes. |
+| Move a **city admin** to a city with **no admin** | They live in the new city **and become its admin**. Their old city is left **without an admin**, so appoint a new one there. |
+| Move a city admin (or appoint anyone) to a city that **already has an admin** | You're asked: *"Delhi already has an admin: Bilal Khan. Make Imran Khan the admin instead? The current admin will become a regular member."* **OK** makes the new person the admin, and the previous admin becomes an ordinary member (they keep their account, posts and city). **Cancel** changes nothing. |
 
 ---
 

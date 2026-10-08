@@ -50,6 +50,11 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "Please choose a photo", null);
     }
 
+    @ExceptionHandler(CityHasAdminException.class)
+    public ResponseEntity<ApiError> handleCityHasAdmin(CityHasAdminException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), null, CityHasAdminException.CODE);
+    }
+
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<ApiError> handleConflict(ConflictException ex) {
         return build(HttpStatus.CONFLICT, ex.getMessage(), null);
@@ -88,8 +93,13 @@ public class GlobalExceptionHandler {
     }
 
     private ResponseEntity<ApiError> build(HttpStatus status, String message, Map<String, String> fieldErrors) {
+        return build(status, message, fieldErrors, null);
+    }
+
+    private ResponseEntity<ApiError> build(HttpStatus status, String message, Map<String, String> fieldErrors,
+                                           String code) {
         ApiError body = new ApiError(LocalDateTime.now(), status.value(), status.getReasonPhrase(), message,
-                fieldErrors);
+                fieldErrors, code);
         return ResponseEntity.status(status).body(body);
     }
 }

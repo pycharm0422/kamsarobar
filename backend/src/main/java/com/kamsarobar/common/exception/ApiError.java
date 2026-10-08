@@ -8,5 +8,7 @@ public record ApiError(
         int status,
         String error,
         String message,
-        Map<String, String> fieldErrors) {
+        Map<String, String> fieldErrors,
+        /** Set for errors the app reacts to specifically, e.g. CITY_HAS_ADMIN. */
+        String code) {
 }

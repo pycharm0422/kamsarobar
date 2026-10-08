@@ -3,6 +3,7 @@ import { adminApi } from '../../api';
 import Alert from '../../components/Alert';
 import CitySelect from '../../components/CitySelect';
 import { useDebounce } from '../../hooks/useDebounce';
+import { withAdminReplacement } from '../../utils/adminActions';
 import { errorMessage } from '../../utils/errors';
 import { displayMobile } from '../../utils/format';
 
@@ -33,7 +34,8 @@ export default function CityAdminsPanel() {
     e.preventDefault();
     setMessage({});
     try {
-      const u = await adminApi.assignCityAdmin(selected.id, Number(cityId));
+      const u = await withAdminReplacement((replace) => adminApi.assignCityAdmin(selected.id, Number(cityId), replace), selected.name);
+      if (!u) return; // kept the current admin
       setMessage({ type: 'success', text: `${u.name} is now the admin of ${u.managedCity.name}.` });
       setSelected(null);
       setQuery('');

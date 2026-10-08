@@ -4,9 +4,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kamsarobar.city.City;
 import com.kamsarobar.city.CityService;
 import com.kamsarobar.common.exception.BadRequestException;
 import com.kamsarobar.common.exception.ConflictException;
+import com.kamsarobar.common.exception.ForbiddenException;
 import com.kamsarobar.common.exception.ResourceNotFoundException;
 import com.kamsarobar.common.util.PhoneNumberNormalizer;
 import com.kamsarobar.common.util.TextNormalizer;
@@ -46,9 +48,14 @@ public class UserService {
         if (!mobile.equals(user.getMobile()) && userRepository.existsByMobile(mobile)) {
             throw new ConflictException("This mobile number is already registered");
         }
+        City city = cityService.getActiveEntity(request.cityId());
+        if (!city.getId().equals(user.getCity().getId()) && user.getRole() == Role.CITY_ADMIN) {
+            throw new ForbiddenException("You are the admin of " + user.getManagedCity().getName()
+                    + ", so only the main admin can change your city.");
+        }
         user.setName(TextNormalizer.clean(request.name()));
         user.setMobile(mobile);
-        user.setCity(cityService.getActiveEntity(request.cityId()));
+        user.setCity(city);
         return UserResponse.from(user);
     }
 

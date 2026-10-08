@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { adminApi } from '../../api';
 import Alert from '../../components/Alert';
+import CitySelect from '../../components/CitySelect';
 import { WhatsAppIcon } from '../../components/MemberCard';
 import Spinner from '../../components/Spinner';
+import { withAdminReplacement } from '../../utils/adminActions';
 import { errorMessage } from '../../utils/errors';
 import { displayMobile, formatDate, formatDateTime, formatMoney } from '../../utils/format';
 import { whatsappLink } from '../../utils/whatsapp';
@@ -91,6 +93,7 @@ export default function MemberPage() {
         <Stat label="Donated (verified)" value={formatMoney(activity.donatedVerified)} />
       </div>
 
+      {data.canChangeCity && <CityCard data={data} onChange={setData} />}
       <BlockCard data={data} onChange={setData} />
     </div>
   );
@@ -102,6 +105,52 @@ function Stat({ label, value }) {
       <p className="muted small">{label}</p>
       <p className="stat-value">{value}</p>
     </div>
+  );
+}
+
+/** Main admin only: move a member to another city. A city admin who is moved becomes the admin of the new city. */
+function CityCard({ data, onChange }) {
+  const { member } = data;
+  const [cityId, setCityId] = useState(String(member.city.id));
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState({});
+  const isCityAdmin = member.role === 'CITY_ADMIN';
+
+  const move = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    setMessage({});
+    try {
+      const updated = await withAdminReplacement((replace) => adminApi.changeMemberCity(member.id, Number(cityId), replace), member.name);
+      if (!updated) return;
+      onChange(await adminApi.member(member.id));
+      setMessage({ type: 'success', text: `${member.name} now lives in ${updated.city.name}${updated.managedCity ? ` and is the admin of ${updated.managedCity.name}` : ''}.` });
+    } catch (err) {
+      setMessage({ type: 'error', text: errorMessage(err) });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <form className="card" onSubmit={move}>
+      <h3>City</h3>
+      <p className="muted small">
+        {isCityAdmin
+          ? `${member.name} is the admin of ${member.managedCity?.name}. Moving them makes them the admin of the new city, and ${member.managedCity?.name} will need a new admin. A city has one admin - if the new city already has one, you will be asked whether to replace them.`
+          : 'Move this member to another city - they will see that city’s posts, events and fund.'}
+      </p>
+      <Alert type={message.type} onClose={() => setMessage({})}>{message.text}</Alert>
+      <div className="form-row">
+        <div className="field grow">
+          <label htmlFor="member-city">Lives in</label>
+          <CitySelect id="member-city" value={cityId} onChange={setCityId} />
+        </div>
+        <div className="field">
+          <button className="btn btn-primary" disabled={busy || cityId === String(member.city.id)}>Move</button>
+        </div>
+      </div>
+    </form>
   );
 }
 

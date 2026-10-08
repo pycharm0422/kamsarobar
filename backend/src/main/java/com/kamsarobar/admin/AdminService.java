@@ -11,6 +11,7 @@ import com.kamsarobar.city.City;
 import com.kamsarobar.city.CityRepository;
 import com.kamsarobar.city.CityService;
 import com.kamsarobar.common.exception.BadRequestException;
+import com.kamsarobar.common.exception.CityHasAdminException;
 import com.kamsarobar.common.util.TextNormalizer;
 import com.kamsarobar.common.web.PageResponse;
 import com.kamsarobar.donation.DonationRepository;
@@ -62,15 +63,49 @@ public class AdminService {
         return userRepository.findAllByRoleOrderByNameAsc(Role.CITY_ADMIN).stream().map(UserResponse::from).toList();
     }
 
+    /**
+     * Makes the member the admin of the city. A city has one admin: if it already has one, this fails with
+     * CITY_HAS_ADMIN unless replaceExisting is true, in which case the current admin becomes a regular member.
+     */
     @Transactional
-    public UserResponse assignCityAdmin(Long userId, Long cityId) {
+    public UserResponse assignCityAdmin(Long userId, Long cityId, boolean replaceExisting) {
         User user = userService.getEntity(userId);
         if (user.getRole() == Role.MAIN_ADMIN) {
             throw new BadRequestException("The main admin already manages every city");
         }
         City city = cityService.getActiveEntity(cityId);
-        user.makeCityAdmin(city);
+        makeSoleAdmin(user, city, replaceExisting);
         return UserResponse.from(user);
+    }
+
+    /**
+     * Moves a member to another city (only the main admin may do this for city admins). A city admin who is moved
+     * becomes the admin of the new city - subject to the same one-admin-per-city rule - and their old city is
+     * left without an admin until the main admin appoints one.
+     */
+    @Transactional
+    public UserResponse changeMemberCity(Long userId, Long cityId, boolean replaceExisting) {
+        User user = userService.getEntity(userId);
+        City city = cityService.getActiveEntity(cityId);
+        if (user.getRole() == Role.CITY_ADMIN) {
+            makeSoleAdmin(user, city, replaceExisting);
+        }
+        user.setCity(city);
+        return UserResponse.from(user);
+    }
+
+    private void makeSoleAdmin(User user, City city, boolean replaceExisting) {
+        List<User> others = userRepository.findByRoleAndManagedCityId(Role.CITY_ADMIN, city.getId()).stream()
+                .filter(other -> !other.getId().equals(user.getId()))
+                .toList();
+        if (!others.isEmpty()) {
+            if (!replaceExisting) {
+                throw new CityHasAdminException(city.getName(),
+                        String.join(", ", others.stream().map(User::getName).toList()));
+            }
+            others.forEach(User::revokeCityAdmin);
+        }
+        user.makeCityAdmin(city);
     }
 
     @Transactional
