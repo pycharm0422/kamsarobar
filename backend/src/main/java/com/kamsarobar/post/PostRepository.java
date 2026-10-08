@@ -12,11 +12,14 @@ import org.springframework.data.repository.query.Param;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-    /** The feed a viewer is allowed to see; cityId and category are optional filters (null = any). */
+    /**
+     * The feed a viewer is allowed to see, newest first. Filtering by a city shows that city's posts plus every
+     * post shared with all cities (from any city). cityId and category are optional (null = any).
+     */
     @EntityGraph(attributePaths = {"author", "city"})
     @Query(value = """
             select p from Post p
-            where (:cityId is null or p.city.id = :cityId)
+            where (:cityId is null or p.city.id = :cityId or p.visibility = com.kamsarobar.post.PostVisibility.EVERYONE)
               and (:category is null or p.category = :category)
               and """ + PostAudience.JPQL_FILTER + """
 
@@ -24,7 +27,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             """,
             countQuery = """
             select count(p) from Post p
-            where (:cityId is null or p.city.id = :cityId)
+            where (:cityId is null or p.city.id = :cityId or p.visibility = com.kamsarobar.post.PostVisibility.EVERYONE)
               and (:category is null or p.category = :category)
               and """ + PostAudience.JPQL_FILTER)
     Page<Post> findFeed(@Param("cityId") Long cityId, @Param("category") PostCategory category,
@@ -66,9 +69,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                                     @Param("viewerManagedCityId") Long viewerManagedCityId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"author", "city"})
-    @Query(value = "select p from Post p where (:cityId is null or p.city.id = :cityId) and " + UPCOMING
+    @Query(value = "select p from Post p where (:cityId is null or p.city.id = :cityId or p.visibility = com.kamsarobar.post.PostVisibility.EVERYONE) and " + UPCOMING
             + " order by p.eventStartsAt asc",
-            countQuery = "select count(p) from Post p where (:cityId is null or p.city.id = :cityId) and " + UPCOMING)
+            countQuery = "select count(p) from Post p where (:cityId is null or p.city.id = :cityId or p.visibility = com.kamsarobar.post.PostVisibility.EVERYONE) and " + UPCOMING)
     Page<Post> findUpcoming(@Param("cityId") Long cityId, @Param("now") Instant now,
                             @Param("startedAfter") Instant startedAfter, @Param("seesAll") boolean seesAll,
                             @Param("viewerId") Long viewerId, @Param("viewerCityId") Long viewerCityId,

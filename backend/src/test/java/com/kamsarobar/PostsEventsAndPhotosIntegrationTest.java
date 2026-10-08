@@ -1,7 +1,9 @@
 package com.kamsarobar;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -114,9 +116,9 @@ class PostsEventsAndPhotosIntegrationTest {
                 .andExpect(jsonPath("$.content[0].title").value("Career seminar"));
         call(get("/api/events/mine"), alice, null).andExpect(jsonPath("$.content", hasSize(0)));
         call(get("/api/events/upcoming?cityId=" + pune), alice, null)
-                .andExpect(jsonPath("$.content[0].id").value(seminarId));
+                .andExpect(jsonPath("$.content[*].id", hasItem((int) seminarId)));
         call(get("/api/posts?cityId=" + pune), bob, null)
-                .andExpect(jsonPath("$.content[0].event.attending").value(true));
+                .andExpect(jsonPath("$.content[?(@.id == " + seminarId + ")].event.attending", contains(true)));
         call(delete("/api/posts/" + seminarId + "/attendance"), bob, null)
                 .andExpect(jsonPath("$.event.attending").value(false));
         call(get("/api/events/mine"), bob, null).andExpect(jsonPath("$.content", hasSize(0)));

@@ -89,6 +89,7 @@ Categories: `GENERAL`, `JOB_OPENING`, `HELP_NEEDED`, `SEMINAR`, `EVENT`, `ANNOUN
 - `visibility` controls who can see the post:
   - `CITY` (the default) means only members living in the author's city.
   - `EVERYONE` means members of all cities.
+- Filtering by city (`/posts?cityId=`, `/events/upcoming?cityId=`) returns that city's posts **plus every post shared with `EVERYONE`**, from any city.
 - A post that is `CITY` and belongs to another city is filtered out of `/posts` and `/events/*`. For an outsider, `GET /posts/{id}`, its comments and its attendance endpoints return **404**, as if the post didn't exist. That city's admin, the main admin and the author can always see it.
 - A normal post needs text **or** at least one photo. The title is optional. At most 6 photos.
 - `SEMINAR` and `EVENT` posts need a `title` and a future `eventStartsAt`. The `event*` fields are ignored for other categories.
@@ -102,7 +103,7 @@ Categories: `GENERAL`, `JOB_OPENING`, `HELP_NEEDED`, `SEMINAR`, `EVENT`, `ANNOUN
 | PUT | `/posts/{id}/attendance` | Add to my upcoming events (doing it twice has no extra effect). Returns the updated post. |
 | DELETE | `/posts/{id}/attendance` | Remove from my events |
 | GET | `/events/mine?page=` | My upcoming events, soonest first |
-| GET | `/events/upcoming?cityId=&page=` | Upcoming events in a city, or in all cities if `cityId` is omitted |
+| GET | `/events/upcoming?cityId=&page=` | Upcoming events in a city plus events shared with everyone from any city, or in all cities if `cityId` is omitted |
 
 An event counts as upcoming until its end time. If it has no end time, it counts as upcoming until 6 hours after it starts.
 

@@ -42,8 +42,8 @@ public class PostService {
     }
 
     /**
-     * Feed of posts the viewer may see, newest first. cityId and category are optional filters; when browsing
-     * another city, only that city's posts shared with everyone appear.
+     * Feed of posts the viewer may see, newest first. cityId and category are optional filters; a post shared with
+     * all cities shows up whichever city is selected.
      */
     public PageResponse<PostResponse> feed(Long cityId, PostCategory category, Pageable pageable,
                                            UserPrincipal viewer) {

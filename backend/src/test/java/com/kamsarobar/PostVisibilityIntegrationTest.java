@@ -53,7 +53,8 @@ class PostVisibilityIntegrationTest {
                 Map.of("content", "Hello everyone", "visibility", "EVERYONE"))
                 .andExpect(jsonPath("$.visibility").value("EVERYONE")));
 
-        // Same city: sees both. Other city: only the post shared with everyone - in every listing.
+        // Same city: sees both. Other city: only the post shared with everyone - in every listing, including
+        // its own city's feed (a post for all cities appears whichever city is selected).
         call(get("/api/posts"), neighbour, null).andExpect(jsonPath("$.content[*].id", hasItem((int) cityOnly)));
         call(get("/api/posts"), outsider, null)
                 .andExpect(jsonPath("$.content[*].id", not(hasItem((int) cityOnly))))
@@ -63,6 +64,12 @@ class PostVisibilityIntegrationTest {
         call(get("/api/posts?cityId=" + patna + "&category=GENERAL"), outsider, null)
                 .andExpect(jsonPath("$.content[*].id", not(hasItem((int) cityOnly))))
                 .andExpect(jsonPath("$.content[*].id", hasItem((int) forAll)));
+        call(get("/api/posts?cityId=" + kolkata), outsider, null)
+                .andExpect(jsonPath("$.content[*].id", hasItem((int) forAll)))
+                .andExpect(jsonPath("$.content[*].id", not(hasItem((int) cityOnly))));
+        call(get("/api/posts?cityId=" + kolkata), author, null) // Patna's own city-only post stays out of Kolkata
+                .andExpect(jsonPath("$.content[*].id", hasItem((int) forAll)))
+                .andExpect(jsonPath("$.content[*].id", not(hasItem((int) cityOnly))));
 
         // Direct link and comments behave as if the post does not exist.
         call(get("/api/posts/" + cityOnly), outsider, null).andExpect(status().isNotFound());
@@ -81,6 +88,12 @@ class PostVisibilityIntegrationTest {
         call(put("/api/posts/" + seminar + "/attendance"), outsider, null).andExpect(status().isNotFound());
         call(put("/api/posts/" + seminar + "/attendance"), neighbour, null)
                 .andExpect(jsonPath("$.event.attending").value(true));
+        // A seminar shared with all cities shows up in other cities' event lists, even when filtered by city.
+        long openSeminar = id(call(post("/api/posts"), author, Map.of("category", "SEMINAR", "title", "Open career talk",
+                "eventStartsAt", start, "visibility", "EVERYONE")).andExpect(status().isCreated()));
+        call(get("/api/events/upcoming?cityId=" + kolkata), outsider, null)
+                .andExpect(jsonPath("$.content[*].id", hasItem((int) openSeminar)))
+                .andExpect(jsonPath("$.content[*].id", not(hasItem((int) seminar))));
 
         // Switching it to everyone makes it visible to all.
         call(put("/api/posts/" + cityOnly), author, Map.of("content", "Now for all", "visibility", "EVERYONE"))

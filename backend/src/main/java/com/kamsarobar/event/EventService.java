@@ -44,6 +44,7 @@ public class EventService {
                 now.minus(DEFAULT_DURATION), pageable), viewer);
     }
 
+    /** Upcoming events in a city, plus events from any city that are shared with everyone. */
     public PageResponse<PostResponse> upcoming(Long cityId, UserPrincipal viewer, Pageable pageable) {
         Instant now = Instant.now();
         return assembler.toPage(postRepository.findUpcoming(cityId, PostAudience.of(viewer), now,

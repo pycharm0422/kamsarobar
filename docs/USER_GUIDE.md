@@ -76,7 +76,9 @@ Open **Posts** from the menu. You see your own city's posts first. Use the dropd
 
 <img src="screenshots/mobile/18-who-can-see.png" width="300" alt="Choosing who can see a post">
 
-**Posts from other cities.** Pick another city in the dropdown to see its posts that are shared with everyone. Posts its members kept for their own city don't appear, and their links don't open for people outside that city. The same applies to their comments, and to seminars and events (you can't add another city's city-only event to your list).
+**Posts for all cities show up everywhere.** A post shared with **🌐 Everyone** appears in every city's feed, whichever city is selected, so the whole community sees it.
+
+**Posts from other cities.** Pick another city in the dropdown to see its posts that are shared with everyone, along with posts for all cities. Posts its members kept for their own city don't appear, and their links don't open for people outside that city. The same applies to their comments, and to seminars and events (you can't add another city's city-only event to your list).
 
 A city's admin can see and moderate all posts in the city they manage, and the main admin can see every post. If you move to another city, you still see your own old posts.
 
