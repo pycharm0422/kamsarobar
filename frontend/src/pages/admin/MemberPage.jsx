@@ -139,6 +139,7 @@ function CityCard({ data, onChange }) {
         {isCityAdmin
           ? `${member.name} is the admin of ${member.managedCity?.name}. Moving them makes them the admin of the new city, and ${member.managedCity?.name} will need a new admin. A city has one admin - if the new city already has one, you will be asked whether to replace them.`
           : 'Move this member to another city - they will see that city’s posts, events and fund.'}
+        {' '}Their “only my city” posts move with them; posts for everyone and upcoming events stay where they are.
       </p>
       <Alert type={message.type} onClose={() => setMessage({})}>{message.text}</Alert>
       <div className="form-row">

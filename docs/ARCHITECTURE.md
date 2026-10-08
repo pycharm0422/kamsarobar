@@ -23,7 +23,7 @@ Each feature is a self-contained package with its own entity, repository, servic
 | `user` | `User` entity, `Role` (MEMBER / CITY_ADMIN / MAIN_ADMIN), editing basic info and password |
 | `profile` | `UserProfile` (form 2), and the `Company` and `Skill` tag tables with autocomplete |
 | `directory` | "Who can refer me to X?" and "Who knows Y?" search |
-| `post` | Posts (text, photos, seminars and events) and comments, with ownership and moderation rules. Event attendees. `PostResponseAssembler` builds a whole page of responses with a fixed number of queries. |
+| `post` | Posts (text, photos, seminars and events) and comments, with ownership and moderation rules. Event attendees. `PostResponseAssembler` builds a whole page of responses with a fixed number of queries. `MemberPostsMover` moves a member's city-only posts when they change city: `UserService` publishes a `MemberMovedEvent` and doesn't need to know about posts. |
 | `event` | "My upcoming events" and discovering upcoming events and seminars |
 | `notification` | Push notifications: registered phones, members' choices, who is notified about a new post or event, and the event reminder job. Sending goes through a `PushSender` interface, with an Expo implementation by default. |
 | `media` | Photo upload, validation by file contents, storage behind the `ImageStorage` interface, and an hourly cleanup of unused photos |

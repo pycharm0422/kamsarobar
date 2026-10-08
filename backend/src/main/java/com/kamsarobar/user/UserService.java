@@ -1,5 +1,6 @@
 package com.kamsarobar.user;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,13 +25,16 @@ public class UserService {
     private final CityService cityService;
     private final PhoneNumberNormalizer phoneNormalizer;
     private final PasswordEncoder passwordEncoder;
+    private final ApplicationEventPublisher events;
 
     public UserService(UserRepository userRepository, CityService cityService,
-                       PhoneNumberNormalizer phoneNormalizer, PasswordEncoder passwordEncoder) {
+                       PhoneNumberNormalizer phoneNormalizer, PasswordEncoder passwordEncoder,
+                       ApplicationEventPublisher events) {
         this.userRepository = userRepository;
         this.cityService = cityService;
         this.phoneNormalizer = phoneNormalizer;
         this.passwordEncoder = passwordEncoder;
+        this.events = events;
     }
 
     public User getEntity(Long id) {
@@ -55,8 +59,18 @@ public class UserService {
         }
         user.setName(TextNormalizer.clean(request.name()));
         user.setMobile(mobile);
-        user.setCity(city);
+        moveToCity(user, city);
         return UserResponse.from(user);
+    }
+
+    /** The one place a member's home city changes. Must run inside the caller's transaction. */
+    public void moveToCity(User user, City city) {
+        Long from = user.getCity().getId();
+        if (from.equals(city.getId())) {
+            return;
+        }
+        user.setCity(city);
+        events.publishEvent(new MemberMovedEvent(user.getId(), from, city.getId()));
     }
 
     @Transactional

@@ -80,7 +80,9 @@ Open **Posts** from the menu. You see your own city's posts first. Use the dropd
 
 **Posts from other cities.** Pick another city in the dropdown to see its posts that are shared with everyone, along with posts for all cities. Posts its members kept for their own city don't appear, and their links don't open for people outside that city. The same applies to their comments, and to seminars and events (you can't add another city's city-only event to your list).
 
-A city's admin can see and moderate all posts in the city they manage, and the main admin can see every post. If you move to another city, you still see your own old posts.
+A city's admin can see and moderate all posts in the city they manage, and the main admin can see every post.
+
+**If you move to another city**, your **🏙 only my city** posts move with you: members of your new city see them, and your old city no longer does. Your **🌐 Everyone** posts stay as they are, since everyone sees them anyway. Seminars and events that haven't finished yet stay in the old city, because they take place there and people have already added them to their lists. You always see and manage all your own posts.
 
 **Photos.** You can pick photos straight from your phone's gallery or camera, whatever their size:
 
@@ -224,8 +226,8 @@ Only the main admin can change a city admin's city. Open **Members**, tap the pe
 
 | What you do | What happens |
 |---|---|
-| Move an **ordinary member** | Only the city they live in changes. |
-| Move a **city admin** to a city with **no admin** | They live in the new city **and become its admin**. Their old city is left **without an admin**, so appoint a new one there. |
+| Move an **ordinary member** | They live in the new city. Their "only my city" posts move with them (see 1.5). |
+| Move a **city admin** to a city with **no admin** | They live in the new city **and become its admin**, and their "only my city" posts move with them. Their old city is left **without an admin**, so appoint a new one there. |
 | Move a city admin (or appoint anyone) to a city that **already has an admin** | You're asked: *"Delhi already has an admin: Bilal Khan. Make Imran Khan the admin instead? The current admin will become a regular member."* **OK** makes the new person the admin, and the previous admin becomes an ordinary member (they keep their account, posts and city). **Cancel** changes nothing. |
 
 ---

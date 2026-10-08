@@ -173,7 +173,7 @@ function BasicForm() {
         <small className="muted">
           {user.role === 'CITY_ADMIN'
             ? `You are the admin of ${user.managedCity?.name}, so only the main admin can change your city.`
-            : 'Moving cities? Change it here and you will join that city’s community.'}
+            : 'Moving cities? Change it here and you will join that city’s community. Your “only my city” posts move with you; posts for everyone and upcoming events stay where they are.'}
         </small>
       </div>
       <div className="form-actions">

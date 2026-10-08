@@ -139,6 +139,8 @@ An event counts as upcoming until its end time. If it has no end time, it counts
 | DELETE | `/admin/city-admins/{userId}` | Revoke |
 | PUT | `/admin/members/{userId}/city` | `{ cityId, replaceExistingAdmin }`: move a member to another city. A city admin moves together with their admin role. |
 
+**Posts follow the member.** Whenever a member's city changes (through `PUT /users/me` or this endpoint), their `CITY` posts move to the new city. `EVERYONE` posts, and seminars or events that haven't ended, stay in the old city.
+
 **One admin per city.** If the target city already has a different admin, appointing or moving a city admin there returns **409** with `"code": "CITY_HAS_ADMIN"` and a message naming the current admin. Send the same request again with `"replaceExistingAdmin": true` to go ahead: the current admin becomes an ordinary member. Moving a city admin away leaves their old city without an admin. Moving an ordinary member never conflicts.
 
 ## Member management (main admin: all cities · city admin: own city)

@@ -90,7 +90,7 @@ public class AdminService {
         if (user.getRole() == Role.CITY_ADMIN) {
             makeSoleAdmin(user, city, replaceExisting);
         }
-        user.setCity(city);
+        userService.moveToCity(user, city);
         return UserResponse.from(user);
     }
 

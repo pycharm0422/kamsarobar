@@ -25,7 +25,7 @@ import com.kamsarobar.security.UserPrincipal;
 public class EventService {
 
     /** An event without an end time stays "upcoming" for this long after it starts. */
-    private static final Duration DEFAULT_DURATION = Duration.ofHours(6);
+    private static final Duration DEFAULT_DURATION = Post.DEFAULT_EVENT_DURATION;
 
     private final PostRepository postRepository;
     private final EventAttendeeRepository attendeeRepository;

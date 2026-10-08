@@ -117,7 +117,7 @@ cd backend
 mvn test
 ```
 
-The tests include end-to-end integration tests. One covers registration, both profile forms, referral and expert search, posts and comments, appointing a city admin, city settings and donation verification. Another covers photo upload and validation, photo-only posts, seminars, "add to my events" and per-city donation totals. A third checks that "only my city" posts stay hidden from other cities everywhere: the feed, direct links, comments and events. A fourth covers admins viewing member profiles and blocking or unblocking members: who may block whom, immediate logout, and hidden content and search results. A fifth covers the city-admin rules: city admins can't change their own city, and each city has one admin.
+The tests include end-to-end integration tests. One covers registration, both profile forms, referral and expert search, posts and comments, appointing a city admin, city settings and donation verification. Another covers photo upload and validation, photo-only posts, seminars, "add to my events" and per-city donation totals. A third checks that "only my city" posts stay hidden from other cities everywhere: the feed, direct links, comments and events. A fourth covers admins viewing member profiles and blocking or unblocking members: who may block whom, immediate logout, and hidden content and search results. A fifth covers the city-admin rules: city admins can't change their own city, and each city has one admin. A sixth checks that a member's city-only posts move with them when they change city.
 
 ```bash
 cd frontend

@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -44,6 +45,19 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Optional<Post> findWithAuthorById(Long id);
 
     long countByAuthorId(Long authorId);
+
+    /** Moves the author's city-only posts from one city to another, except seminars and events that haven't ended. */
+    @Modifying(flushAutomatically = true)
+    @Query("""
+            update Post p set p.city.id = :toCityId
+            where p.author.id = :authorId and p.city.id = :fromCityId
+              and p.visibility = com.kamsarobar.post.PostVisibility.CITY
+              and (p.eventStartsAt is null
+                   or p.eventEndsAt < :now or (p.eventEndsAt is null and p.eventStartsAt < :startedAfter))
+            """)
+    int moveCityOnlyPosts(@Param("authorId") Long authorId, @Param("fromCityId") Long fromCityId,
+                          @Param("toCityId") Long toCityId, @Param("now") Instant now,
+                          @Param("startedAfter") Instant startedAfter);
 
     // --- Events & seminars. "Upcoming" = not yet ended: end time in the future, or (no end time)
     // started less than 6 hours ago. Visibility rules apply here too. ---
