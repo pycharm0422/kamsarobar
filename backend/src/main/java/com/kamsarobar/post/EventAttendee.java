@@ -30,6 +30,8 @@ public class EventAttendee {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    private LocalDateTime reminderSentAt;
+
     protected EventAttendee() {
     }
 

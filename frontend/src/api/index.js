@@ -87,7 +87,10 @@ export const adminApi = {
   updateCity: (id, body) => data(client.put(`/admin/cities/${id}`, body)),
   users: (params) => data(client.get('/admin/users', { params })),
   cityAdmins: () => data(client.get('/admin/city-admins')),
-  assignCityAdmin: (userId, cityId) => data(client.post('/admin/city-admins', { userId, cityId })),
+  assignCityAdmin: (userId, cityId, replaceExistingAdmin = false) =>
+    data(client.post('/admin/city-admins', { userId, cityId, replaceExistingAdmin })),
+  changeMemberCity: (id, cityId, replaceExistingAdmin = false) =>
+    data(client.put(`/admin/members/${id}/city`, { cityId, replaceExistingAdmin })),
   revokeCityAdmin: (userId) => data(client.delete(`/admin/city-admins/${userId}`)),
   // Main admin: every city. City admin: their own city only.
   members: (params) => data(client.get('/admin/members', { params })),

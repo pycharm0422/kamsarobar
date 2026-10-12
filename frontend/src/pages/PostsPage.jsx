@@ -87,7 +87,7 @@ export default function PostsPage() {
           </div>
           {cityId && cityId !== String(user.city.id) && city && (
             <p className="muted small other-city-note">
-              Showing {city.name} posts that are shared with everyone. Posts meant only for {city.name} members are not shown.
+              Showing {city.name}'s posts that are shared with everyone, plus posts for all cities. Posts meant only for {city.name} members are not shown.
             </p>
           )}
           {!feed ? (

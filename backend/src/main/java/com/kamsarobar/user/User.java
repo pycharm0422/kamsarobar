@@ -10,6 +10,7 @@ import org.hibernate.type.SqlTypes;
 import com.kamsarobar.city.City;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -63,6 +64,9 @@ public class User {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "blocked_by_id")
     private User blockedBy;
+
+    @Embedded
+    private NotificationSettings notificationSettings = new NotificationSettings();
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
@@ -171,6 +175,13 @@ public class User {
 
     public User getBlockedBy() {
         return blockedBy;
+    }
+
+    public NotificationSettings getNotificationSettings() {
+        if (notificationSettings == null) { // Hibernate leaves an all-default embeddable null on old rows
+            notificationSettings = new NotificationSettings();
+        }
+        return notificationSettings;
     }
 
     public LocalDateTime getCreatedAt() {

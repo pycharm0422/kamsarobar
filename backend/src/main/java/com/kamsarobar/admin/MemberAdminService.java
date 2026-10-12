@@ -109,6 +109,8 @@ public class MemberAdminService {
         var block = new MemberDetails.BlockInfo(member.isBlocked(), member.getBlockedReason(), member.getBlockedAt(),
                 member.getBlockedBy() == null ? null : member.getBlockedBy().getName());
         boolean canBlock = accessPolicy.canBlockMember(actor, id, member.getRole(), member.getCity().getId());
-        return new MemberDetails(UserResponse.from(member), profileService.getForUser(id), activity, block, canBlock);
+        // Only the main admin moves members between cities (city admins cannot even move themselves).
+        return new MemberDetails(UserResponse.from(member), profileService.getForUser(id), activity, block, canBlock,
+                actor.isMainAdmin());
     }
 }

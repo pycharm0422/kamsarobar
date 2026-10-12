@@ -44,6 +44,12 @@ app:
     city: ${ADMIN_CITY:Ghazipur}
   phone:
     default-country-code: ${DEFAULT_COUNTRY_CODE:91}
+  push:
+    # "expo" sends real push notifications to the mobile app through Expo's free push service;
+    # "log" only writes them to the log (handy without internet).
+    provider: ${PUSH_PROVIDER:expo}
+    # Optional: only needed if you turn on "enhanced push security" in your Expo account.
+    expo-access-token: ${EXPO_ACCESS_TOKEN:}
   storage:
     # Where uploaded photos are kept (a Docker volume in docker-compose.yml).
     local-path: ${STORAGE_PATH:./data/uploads}

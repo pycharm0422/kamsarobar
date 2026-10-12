@@ -25,7 +25,7 @@ import com.kamsarobar.security.UserPrincipal;
 public class EventService {
 
     /** An event without an end time stays "upcoming" for this long after it starts. */
-    private static final Duration DEFAULT_DURATION = Duration.ofHours(6);
+    private static final Duration DEFAULT_DURATION = Post.DEFAULT_EVENT_DURATION;
 
     private final PostRepository postRepository;
     private final EventAttendeeRepository attendeeRepository;
@@ -44,6 +44,7 @@ public class EventService {
                 now.minus(DEFAULT_DURATION), pageable), viewer);
     }
 
+    /** Upcoming events in a city, plus events from any city that are shared with everyone. */
     public PageResponse<PostResponse> upcoming(Long cityId, UserPrincipal viewer, Pageable pageable) {
         Instant now = Instant.now();
         return assembler.toPage(postRepository.findUpcoming(cityId, PostAudience.of(viewer), now,

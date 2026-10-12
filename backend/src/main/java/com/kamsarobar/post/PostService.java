@@ -2,6 +2,7 @@ package com.kamsarobar.post;
 
 import java.time.Instant;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,9 +29,11 @@ public class PostService {
     private final ImageService imageService;
     private final AccessPolicy accessPolicy;
     private final PostResponseAssembler assembler;
+    private final ApplicationEventPublisher events;
 
     public PostService(PostRepository postRepository, UserService userService, ImageService imageService,
-                       AccessPolicy accessPolicy, PostResponseAssembler assembler) {
+                       AccessPolicy accessPolicy, PostResponseAssembler assembler, ApplicationEventPublisher events) {
+        this.events = events;
         this.postRepository = postRepository;
         this.userService = userService;
         this.imageService = imageService;
@@ -39,8 +42,8 @@ public class PostService {
     }
 
     /**
-     * Feed of posts the viewer may see, newest first. cityId and category are optional filters; when browsing
-     * another city, only that city's posts shared with everyone appear.
+     * Feed of posts the viewer may see, newest first. cityId and category are optional filters; a post shared with
+     * all cities shows up whichever city is selected.
      */
     public PageResponse<PostResponse> feed(Long cityId, PostCategory category, Pageable pageable,
                                            UserPrincipal viewer) {
@@ -63,6 +66,7 @@ public class PostService {
         applyEvent(post, request, category);
         postRepository.save(post);
         imageService.setPostImages(post, request.imageIds(), actor.id());
+        events.publishEvent(new PostCreatedEvent(post.getId()));
         return assembler.toResponse(post, actor);
     }
 

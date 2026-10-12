@@ -7,16 +7,20 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-    /** The feed a viewer is allowed to see; cityId and category are optional filters (null = any). */
+    /**
+     * The feed a viewer is allowed to see, newest first. Filtering by a city shows that city's posts plus every
+     * post shared with all cities (from any city). cityId and category are optional (null = any).
+     */
     @EntityGraph(attributePaths = {"author", "city"})
     @Query(value = """
             select p from Post p
-            where (:cityId is null or p.city.id = :cityId)
+            where (:cityId is null or p.city.id = :cityId or p.visibility = com.kamsarobar.post.PostVisibility.EVERYONE)
               and (:category is null or p.category = :category)
               and """ + PostAudience.JPQL_FILTER + """
 
@@ -24,7 +28,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             """,
             countQuery = """
             select count(p) from Post p
-            where (:cityId is null or p.city.id = :cityId)
+            where (:cityId is null or p.city.id = :cityId or p.visibility = com.kamsarobar.post.PostVisibility.EVERYONE)
               and (:category is null or p.category = :category)
               and """ + PostAudience.JPQL_FILTER)
     Page<Post> findFeed(@Param("cityId") Long cityId, @Param("category") PostCategory category,
@@ -41,6 +45,19 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Optional<Post> findWithAuthorById(Long id);
 
     long countByAuthorId(Long authorId);
+
+    /** Moves the author's city-only posts from one city to another, except seminars and events that haven't ended. */
+    @Modifying(flushAutomatically = true)
+    @Query("""
+            update Post p set p.city.id = :toCityId
+            where p.author.id = :authorId and p.city.id = :fromCityId
+              and p.visibility = com.kamsarobar.post.PostVisibility.CITY
+              and (p.eventStartsAt is null
+                   or p.eventEndsAt < :now or (p.eventEndsAt is null and p.eventStartsAt < :startedAfter))
+            """)
+    int moveCityOnlyPosts(@Param("authorId") Long authorId, @Param("fromCityId") Long fromCityId,
+                          @Param("toCityId") Long toCityId, @Param("now") Instant now,
+                          @Param("startedAfter") Instant startedAfter);
 
     // --- Events & seminars. "Upcoming" = not yet ended: end time in the future, or (no end time)
     // started less than 6 hours ago. Visibility rules apply here too. ---
@@ -66,9 +83,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                                     @Param("viewerManagedCityId") Long viewerManagedCityId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"author", "city"})
-    @Query(value = "select p from Post p where (:cityId is null or p.city.id = :cityId) and " + UPCOMING
+    @Query(value = "select p from Post p where (:cityId is null or p.city.id = :cityId or p.visibility = com.kamsarobar.post.PostVisibility.EVERYONE) and " + UPCOMING
             + " order by p.eventStartsAt asc",
-            countQuery = "select count(p) from Post p where (:cityId is null or p.city.id = :cityId) and " + UPCOMING)
+            countQuery = "select count(p) from Post p where (:cityId is null or p.city.id = :cityId or p.visibility = com.kamsarobar.post.PostVisibility.EVERYONE) and " + UPCOMING)
     Page<Post> findUpcoming(@Param("cityId") Long cityId, @Param("now") Instant now,
                             @Param("startedAfter") Instant startedAfter, @Param("seesAll") boolean seesAll,
                             @Param("viewerId") Long viewerId, @Param("viewerCityId") Long viewerCityId,

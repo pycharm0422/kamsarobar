@@ -97,8 +97,8 @@ class CommunityFlowIntegrationTest {
         long commentId = id(call(post("/api/posts/" + postId + "/comments"), referrer, Map.of("content", "I can refer"))
                 .andExpect(status().isCreated()));
         call(get("/api/posts?cityId=" + delhi), seeker, null)
-                .andExpect(jsonPath("$.content[0].commentCount").value(1))
-                .andExpect(jsonPath("$.content[0].canEdit").value(true));
+                .andExpect(jsonPath("$.content[?(@.id == " + postId + ")].commentCount", contains(1)))
+                .andExpect(jsonPath("$.content[?(@.id == " + postId + ")].canEdit", contains(true)));
         call(delete("/api/comments/" + commentId), seeker, null).andExpect(status().isForbidden());
         call(put("/api/comments/" + commentId), referrer, Map.of("content", "Edited")).andExpect(status().isOk());
 

@@ -37,7 +37,7 @@ Right after joining you see **Step 2 of 2**. Fill this in so other members can f
 **Everything is editable.** Go to **Profile** at any time:
 
 - **Work & referrals** tab: form 2.
-- **Basic info** tab: change your name, mobile number or city (for example, if you move to another city).
+- **Basic info** tab: change your name, mobile number or city (for example, if you move to another city). City admins can't change their own city here; see 2.6.
 - **Password** tab: change your password.
 
 ### 1.3 Find someone who can refer you
@@ -76,9 +76,13 @@ Open **Posts** from the menu. You see your own city's posts first. Use the dropd
 
 <img src="screenshots/mobile/18-who-can-see.png" width="300" alt="Choosing who can see a post">
 
-**Posts from other cities.** Pick another city in the dropdown to see its posts that are shared with everyone. Posts its members kept for their own city don't appear, and their links don't open for people outside that city. The same applies to their comments, and to seminars and events (you can't add another city's city-only event to your list).
+**Posts for all cities show up everywhere.** A post shared with **🌐 Everyone** appears in every city's feed, whichever city is selected, so the whole community sees it.
 
-A city's admin can see and moderate all posts in the city they manage, and the main admin can see every post. If you move to another city, you still see your own old posts.
+**Posts from other cities.** Pick another city in the dropdown to see its posts that are shared with everyone, along with posts for all cities. Posts its members kept for their own city don't appear, and their links don't open for people outside that city. The same applies to their comments, and to seminars and events (you can't add another city's city-only event to your list).
+
+A city's admin can see and moderate all posts in the city they manage, and the main admin can see every post.
+
+**If you move to another city**, your **🏙 only my city** posts move with you: members of your new city see them, and your old city no longer does. Your **🌐 Everyone** posts stay as they are, since everyone sees them anyway. Seminars and events that haven't finished yet stay in the old city, because they take place there and people have already added them to their lists. You always see and manage all your own posts.
 
 **Photos.** You can pick photos straight from your phone's gallery or camera, whatever their size:
 
@@ -122,6 +126,21 @@ Click **Donate**. You see **your own city's fund** by default: how much has been
 <img src="screenshots/mobile/09-donate.png" width="300" alt="Donate page">
 
 > The website never handles money itself. Money goes straight to the city's bank account. The site only records and displays contributions, so totals are transparent.
+
+---
+
+### 1.8 The mobile app
+
+Everything above is also in the **Kamsar o Bar app** for Android and iPhone. It has five tabs: **Posts**, **Events**, **Find**, **Donate** and **Me**.
+
+The app can also send **notifications**:
+- new posts in your city;
+- new seminars and events;
+- a reminder about an hour before an event you added to *My upcoming events*.
+
+Tap a notification to open the post. Choose what you get under **Me → Notification settings**.
+
+<img src="screenshots/app/02-posts.png" width="240" alt="App: posts"> <img src="screenshots/app/04-my-events.png" width="240" alt="App: my events"> <img src="screenshots/app/09-notification-settings.png" width="240" alt="App: notification settings">
 
 ---
 
@@ -177,6 +196,10 @@ City admins can block ordinary members of their own city. Other admins can be bl
 
 As city admin you can **edit or delete any post, photo or comment in your city**.
 
+### 2.6 Your own city is locked
+
+You are the head of one city, so you **can't change your own city** under *Profile → Basic info*. The city field is greyed out. You can still change your name, mobile number and password. If you move, ask the main admin to move you (see 3.1).
+
 ---
 
 ## 3. For the main admin
@@ -188,12 +211,24 @@ Log in with the main admin account (see the README for the first-login details) 
 | Tab | What you can do |
 |---|---|
 | **Overview** | Number of members, cities, city admins and posts, and the total collected |
-| **City admins** | **Appoint a city admin.** Search a member by name or mobile, choose the city they will head, and click **Make city admin**. **Remove** takes the role away. The change applies immediately. |
+| **City admins** | **Appoint a city admin.** Search a member by name or mobile, choose the city they will head, and click **Make city admin**. **Remove** takes the role away. The change applies immediately. Each city has one admin; see 3.1. |
 | **Manage a city** | Do anything a city admin can (settings, donations, causes) for **any** city |
 | **Cities** | Add new cities, rename them, or hide a city (hidden cities disappear from the sign-up list) |
 | **Members** | Every member in every city. Search by name or mobile, and filter by city and by *Active* or *Blocked*. Tap a name for the full profile and activity, and to **block or unblock** anyone, including city admins (see 2.4). |
 
 As main admin you can also moderate posts and comments in every city.
+
+### 3.1 Moving members and city admins
+
+Only the main admin can change a city admin's city. Open **Members**, tap the person, and use the **City** card: pick the new city under *Lives in* and tap **Move**. You can move ordinary members the same way.
+
+**One admin per city.** Each city has exactly one admin.
+
+| What you do | What happens |
+|---|---|
+| Move an **ordinary member** | They live in the new city. Their "only my city" posts move with them (see 1.5). |
+| Move a **city admin** to a city with **no admin** | They live in the new city **and become its admin**, and their "only my city" posts move with them. Their old city is left **without an admin**, so appoint a new one there. |
+| Move a city admin (or appoint anyone) to a city that **already has an admin** | You're asked: *"Delhi already has an admin: Bilal Khan. Make Imran Khan the admin instead? The current admin will become a regular member."* **OK** makes the new person the admin, and the previous admin becomes an ordinary member (they keep their account, posts and city). **Cancel** changes nothing. |
 
 ---
 

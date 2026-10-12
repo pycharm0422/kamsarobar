@@ -1,5 +1,6 @@
 package com.kamsarobar.post;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -116,11 +117,14 @@ public class Post {
     }
 
     /** An event is over once its end time passes, or 6 hours after it started if no end time was given. */
+    /** An event without an end time counts as running for this long after it starts. */
+    public static final Duration DEFAULT_EVENT_DURATION = Duration.ofHours(6);
+
     public boolean hasEnded(Instant now) {
         if (eventStartsAt == null) {
             return false;
         }
-        Instant end = eventEndsAt != null ? eventEndsAt : eventStartsAt.plusSeconds(6 * 3600);
+        Instant end = eventEndsAt != null ? eventEndsAt : eventStartsAt.plus(DEFAULT_EVENT_DURATION);
         return end.isBefore(now);
     }
 
