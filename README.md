@@ -16,7 +16,9 @@ A community platform for Kamsar o Bar. Members are grouped by city, and the plat
 | Document | What's inside |
 |---|---|
 | [docs/USER_GUIDE.md](docs/USER_GUIDE.md) | How members, city admins and the main admin use the site, with screenshots |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Code structure, how SOLID principles are applied, and how the app scales |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Architecture design with diagrams, design decisions, how SOLID principles are applied, and how the app scales |
+| [docs/CODE_FLOW.md](docs/CODE_FLOW.md) | How a request travels through the code, every key flow end to end, and the order the app was built in |
+| [docs/TUTORIAL.md](docs/TUTORIAL.md) | A step-by-step tutorial: one post followed from the click to the database and back, with the real code, plus how to build it from scratch |
 | [docs/API.md](docs/API.md) | REST API reference |
 
 ---
