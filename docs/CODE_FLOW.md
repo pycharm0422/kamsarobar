@@ -54,7 +54,7 @@ The app was built from the bottom up: database first, then security, then one fe
 3. **Shared building blocks** in `common/`:
    - exception classes and a single `GlobalExceptionHandler` that turns any error into the same JSON shape (`ApiError`);
    - paging helpers (`PageResponse`, `Pages`, page size capped at 50);
-   - `PhoneNumberNormalizer` (adds +91 to 10-digit numbers) and `TextNormalizer`.
+   - `PhoneNumberNormalizer` (keeps digits only, and puts the country code, 91 by default, in front of 10-digit numbers) and `TextNormalizer`.
 4. **Users and login** in `user/`, `auth/` and `security/`:
    - the `User` entity and `Role` (MEMBER, CITY_ADMIN, MAIN_ADMIN);
    - BCrypt password hashing;
@@ -129,12 +129,12 @@ sequenceDiagram
     C-->>B: 200 OK with the post as JSON
 ```
 
-An error thrown at any step jumps straight to `GlobalExceptionHandler`, which returns the same JSON shape every time (`ApiError`):
+An error thrown in a controller or service jumps straight to `GlobalExceptionHandler`, which returns the same JSON shape every time (`ApiError`). The one exception is a missing or bad token: Spring Security rejects it with a bare 401 before any controller runs.
 
 | What went wrong | Status |
 | --- | --- |
 | Invalid input | 400, with `fieldErrors` |
-| No login or a bad token | 401 |
+| Wrong password at login; or no login or a bad token (bare 401 from Spring Security) | 401 |
 | Not allowed | 403 |
 | Not found, or hidden from you | 404 |
 | A conflict, such as a city that already has an admin | 409, with `code: CITY_HAS_ADMIN` |
@@ -171,7 +171,7 @@ Each flow below starts with what the member does and follows the code to the dat
 
 ### Post with photos, and the notifications that follow
 
-1. In `PostForm.jsx`, each chosen photo goes through `prepareImage` (`utils/imageResize.js`). Photos up to 3 MB are kept as they are. Bigger ones are redrawn on a canvas at their original proportions and saved as high-quality JPEG until they fit.
+1. In `ImagePicker.jsx` (part of `PostForm`), each chosen photo goes through `prepareImage` (`utils/imageResize.js`). JPG, PNG, WEBP or GIF photos up to 3 MB are kept as they are. Bigger ones are redrawn on a canvas at their original proportions and saved as high-quality JPEG until they fit.
 2. Each photo is uploaded on its own to `POST /api/images`. `ImageService` checks the real file type from the file's first bytes (`ImageFormat.detect`) and stores it through `ImageStorage` (`FileSystemImageStorage` by default). It returns an image id.
 3. The post is sent to `POST /api/posts` with its text, visibility (CITY or EVERYONE), category, optional event fields and the image ids.
 4. `PostService.create` checks the input, saves the `Post` in the author's city, attaches the images and publishes a `PostCreatedEvent`.

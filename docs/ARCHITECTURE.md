@@ -35,11 +35,11 @@ This keeps it cheap to run (one server can hold all of it) and simple for one pe
 | --- | --- |
 | Members are grouped by city | Every user, post, cause and donation carries a `city_id`. One class, `PostAudience`, decides which city's posts a viewer may see. |
 | Works on a home PC or a small server | One backend jar plus one database. In development an embedded H2 database means nothing needs installing. |
-| Can grow when the community grows | The API is stateless (a JWT login token on each request), so several backend copies can run behind nginx. Every list is paged, and totals are summed in the database. |
+| Can grow when the community grows | The API is stateless (a JWT login token on each request), so several backend copies can run behind nginx. Every list that can grow (feed, search, members, donations, events) is paged, and totals are summed in the database. |
 | Website and phone app share all features | One REST/JSON API. Both clients are just screens. All rules live in the backend. |
 | Easy to change safely | One package per feature, and the SOLID principles. The parts most likely to change sit behind small interfaces: storage, push, tokens, permissions and search. Integration tests cover each feature through the real API. |
 | Never hold anyone's money | Money goes straight to each city's bank or UPI account. The app only records contributions, and the city admin verifies them. |
-| Admin powers are limited and safe | Three roles (member, city admin, main admin). Every permission rule lives in `AccessPolicy`. Blocking hides content but deletes nothing. |
+| Admin powers are limited and safe | Three roles (member, city admin, main admin). Data-level permission rules (content, city management, blocking) live in `AccessPolicy`, and role checks on admin controllers use `@PreAuthorize`. Blocking hides content but deletes nothing. |
 
 ### System context
 
@@ -149,13 +149,16 @@ flowchart TB
 | Layer | Its one job | Must not |
 | --- | --- | --- |
 | Controller | Turn HTTP into a call: path, query, JSON body → a DTO, then the result → JSON | Contain rules or touch repositories |
-| Service | Business rules, permissions (through `AccessPolicy`) and the transaction | Know about HTTP |
+| Service | Business rules, permissions (through `AccessPolicy`) and the transaction | Know about HTTP (one exception: `ImageService.upload` receives the uploaded file as Spring's `MultipartFile`) |
 | Repository | Read and write rows, with paged queries | Contain rules |
 | Entity | Map one table, with small methods that keep its own data consistent (`post.edit(...)`, `user.makeCityAdmin(...)`) | Be returned to the client (DTOs are returned instead) |
 
 ### How the feature packages depend on each other
 
-Each folder under `backend/src/main/java/com/kamsarobar/` is one package. They sit in three tiers, and dependencies point downward. There are two small exceptions: a photo (`media`) knows which post it belongs to, and `access` reads the `Role` type from `user`.
+Each folder under `backend/src/main/java/com/kamsarobar/` is one package. They sit in three tiers, and dependencies point downward. There are a few small exceptions:
+- a photo (`media`) knows which post it belongs to;
+- `access` and `security` use the `User` and `Role` types from `user`, because they decide what a user may do;
+- `config` uses `user` and `city` to create the main admin on first start (`BootstrapAdminInitializer`).
 
 ```mermaid
 flowchart TB
@@ -198,12 +201,12 @@ New reactions to the same events can be added without touching the publisher.
 | Concern | Where it lives | How it works |
 | --- | --- | --- |
 | Who is calling | `security/JwtAuthenticationFilter`, `JwtTokenService` | Reads the JWT, reloads the user by id on every request, and ignores blocked users. |
-| May they call this URL | `config/SecurityConfig`, `@PreAuthorize` on admin controllers | Lists the public URLs (login, register, city list, photos, health). Everything else under `/api` needs a login, and admin controllers also check the role. |
+| May they call this URL | `config/SecurityConfig`, `@PreAuthorize` on admin controllers | Lists the public URLs: login, register, the city list, the overall donation total, photos, health and info, and the H2 console in development. Everything else under `/api` needs a login, and admin controllers also check the role. |
 | May they change this data | `access/AccessPolicy` | `canModifyContent`, `canManageCity` and `canBlockMember`, called by services. |
 | Who may see a post | `post/PostAudience` | The same rule as a Java check (`canSee`) and as a JPQL filter (`JPQL_FILTER`). |
 | Input checks | DTO records (`@NotBlank`, `@Size`, `@Pattern`) plus checks in services | Bad input becomes 400 with `fieldErrors`, or a `BadRequestException` with a message. |
-| Errors | `common/exception/GlobalExceptionHandler` | Every error becomes `{ status, error, message, fieldErrors, code }`. Unexpected errors are logged and return a polite 500. |
-| Transactions | `@Transactional(readOnly = true)` on each service class, `@Transactional` on write methods | A failure undoes the whole change. |
+| Errors | `common/exception/GlobalExceptionHandler` | Every error from a controller or service becomes `{ timestamp, status, error, message, fieldErrors, code }`. Unexpected errors are logged and return a polite 500. A missing or bad token is rejected earlier by Spring Security with a bare 401. |
+| Transactions | `@Transactional(readOnly = true)` on most service classes, `@Transactional` on write methods | A failure undoes the whole change. |
 | Background work | `config/AsyncConfig`, `@Async`, `@TransactionalEventListener`, `@Scheduled` | Notifications go out after commit, reminders every 5 minutes, photo cleanup hourly. |
 | Caching | `config/CacheConfig` (Caffeine) | The city list is cached and evicted when a city changes. |
 | Settings | `application.yml`, `config/AppProperties` | Typed settings from environment variables. Profiles: `dev` (H2), `test`, `prod` (PostgreSQL). |
@@ -264,7 +267,7 @@ Controllers are thin (HTTP ↔ DTO). Services hold the business logic and transa
 
 **L: Liskov Substitution.** Every `DirectorySearchStrategy` and every `TagRepository` subtype can be used wherever the base type is expected, without special cases. `RoleBasedAccessPolicy` can be swapped for any other `AccessPolicy` implementation.
 
-**I: Interface Segregation.** Interfaces are small and focused. `TokenService` has two methods. `AccessPolicy` has two questions plus helpers. `DirectorySearchStrategy` has two methods. On the frontend each resource has its own small API object (`postApi`, `donationApi`...), so pages depend only on what they use.
+**I: Interface Segregation.** Interfaces are small and focused. `TokenService` has two methods. `AccessPolicy` has three questions plus two helpers. `DirectorySearchStrategy` has two methods. On the frontend each resource has its own small API object (`postApi`, `donationApi`...), so pages depend only on what they use.
 
 **D: Dependency Inversion.**
 - Services depend on abstractions such as `TokenService` (not JJWT directly), `AccessPolicy` (not role checks) and `PasswordEncoder`. All of them are wired through constructor injection.
@@ -300,7 +303,7 @@ Next steps when traffic grows:
   - Authors can change their own posts and comments.
   - City admins can moderate their own city and manage its settings, donations and causes. They can't change their own city; only the main admin can move them.
   - The main admin can do everything.
-  - `/api/admin/**` is restricted with `@PreAuthorize("hasRole('MAIN_ADMIN')")`.
+  - `AdminController` (cities, city admins, moving members) is restricted with `@PreAuthorize("hasRole('MAIN_ADMIN')")`. `MemberAdminController` (member list, profiles, blocking) allows `MAIN_ADMIN` and `CITY_ADMIN`, and the service limits a city admin to their own city.
 - **Blocking** is checked on every request. The JWT filter reloads the user and refuses blocked accounts, so a block takes effect immediately rather than when the token expires. The block rule is in `AccessPolicy.canBlockMember`. Hiding a blocked member's content uses the same `PostAudience` filter and comment queries, so it's reversible and nothing is deleted.
 - Post visibility ("only my city" or "everyone") is enforced on the server, never just hidden in the page. The rule lives in one class, `PostAudience`. It provides a Java check for single posts and the matching query filter, so feed, event and comment requests never load a post the viewer may not see. A post that's hidden from someone returns 404, so its existence doesn't leak.
 - Input is validated with Bean Validation, for example on WhatsApp links, IFSC codes, UPI IDs, LinkedIn URLs and amount limits. LIKE wildcards in search terms are escaped.

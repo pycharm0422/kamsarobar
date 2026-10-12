@@ -191,9 +191,12 @@ The Posts page (`pages/PostsPage.jsx`) shows `PostForm`. The form holds what you
 const EMPTY = { category: 'GENERAL', visibility: 'CITY', title: '', content: '', images: [], eventStartsAt: '', /* ... */ };
 
 export default function PostForm({ initial, onSubmit, onCancel, submitLabel = 'Post' }) {
+  // ...
   const [form, setForm] = useState(initial || EMPTY);
   const [busy, setBusy] = useState(false);
+  // ...
   const [error, setError] = useState('');
+  const isEvent = isEventCategory(form.category);
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
   // ...
 ```
@@ -487,7 +490,9 @@ The result is a `UserPrincipal`: id, role, home city and managed city. Controlle
 // backend/.../config/SecurityConfig.java
 http
         .csrf(AbstractHttpConfigurer::disable)
+        .cors(cors -> cors.configurationSource(corsConfigurationSource()))   // only needed if the site and API are on different domains
         .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))   // no server session
+        // ...
         .exceptionHandling(eh -> eh.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
         .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()                         // login, register
@@ -670,9 +675,11 @@ public class Post {
     private PostVisibility visibility = PostVisibility.CITY;
     // ...
     @OneToMany(mappedBy = "post")
-    private List<Image> images;                                // images.post_id → posts.id
-    // ...
+    @OrderBy("position ASC")
+    private List<Image> images = new ArrayList<>();            // images.post_id → posts.id, in photo order
+
     @CreationTimestamp
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;                           // filled in automatically
 ```
 
@@ -754,7 +761,7 @@ The two annotations matter:
 - **`AFTER_COMMIT`:** if saving failed and was rolled back, nobody is told about a post that doesn't exist.
 - **`@Async`:** the member's request doesn't wait while thousands of phones are notified. Posting stays fast.
 
-Who receives it is a business rule too: members of the post's city who left *new posts* switched on, never the author, never blocked members. `PushSender` is an interface. `ExpoPushSender` sends real notifications, and `LoggingPushSender` (`PUSH_PROVIDER=log`) only writes to the log, which is handy without internet.
+Who receives it is a business rule too. For a normal post, it's members of the post's city who left *new posts* switched on. Seminars and events use the members' event settings instead, and also reach other cities' members who opted in when the event is shared with everyone. The author and blocked members are never notified. `PushSender` is an interface. `ExpoPushSender` sends real notifications, and `LoggingPushSender` (`PUSH_PROVIDER=log`) only writes to the log, which is handy without internet.
 
 ---
 
@@ -900,7 +907,7 @@ public boolean canModifyContent(UserPrincipal user, Long authorId, Long cityId) 
 
 `requireContentModifier` (a default method on the `AccessPolicy` interface) throws `ForbiddenException("You can only change your own content")` when the answer is no.
 
-Every permission in the app goes through this class: editing and deleting posts and comments, managing a city's settings and donations, and blocking members. The same method also fills `canEdit` in step 12, so the button and the rule can't disagree. To change a rule, you change one method, and `RoleBasedAccessPolicyTest` checks it.
+Every data-level permission goes through this class: editing and deleting posts and comments, managing a city's settings and donations, and blocking members. Role checks on whole controllers use `@PreAuthorize` (step 8), and a few rules tied to one action stay in their service, such as a city admin not changing their own city (`UserService.updateBasicInfo`). The same method also fills `canEdit` in step 12, so the button and the rule can't disagree. To change a rule, you change one method, and `RoleBasedAccessPolicyTest` checks it.
 
 ### Step 17. When something goes wrong
 
@@ -910,13 +917,17 @@ Services never build error responses. They **throw** an exception that says what
 | --- | --- | --- |
 | `BadRequestException` | A rule in the input is broken ("Write something or add a photo") | 400 |
 | `MethodArgumentNotValidException` (by `@Valid`) | A DTO annotation failed | 400 with `fieldErrors` |
-| (no exception: Spring Security answers) | No login, or a bad token | 401 |
+| `UnauthorizedException` | Wrong mobile number or password at login | 401 |
+| (no exception: Spring Security answers directly, with an empty body) | No login, or a bad or expired token | 401 |
 | `ForbiddenException` | `AccessPolicy` said no | 403 |
 | `ResourceNotFoundException` | No such post, or one you may not see | 404 |
-| `ConflictException`, `CityHasAdminException` | Mobile already registered, city already has an admin | 409, plus `code` |
+| `ConflictException` | Mobile number already registered | 409 |
+| `CityHasAdminException` (a kind of `ConflictException`) | The city already has an admin | 409, with `code: CITY_HAS_ADMIN` |
+| `DataIntegrityViolationException` | The database refused a duplicate or broken link | 409 |
+| `MaxUploadSizeExceededException` | A photo over the upload limit | 413 |
 | anything else | A bug | 500 with a polite message, and the details in the log |
 
-One class catches them all and builds the same JSON shape:
+One class catches them all and builds the same JSON shape. The only 401 it doesn't see is a missing or bad token, which Spring Security rejects before any controller runs.
 
 ```java
 // backend/.../common/exception/GlobalExceptionHandler.java
@@ -926,6 +937,8 @@ public ResponseEntity<ApiError> handleBadRequest(Exception ex) {
     String message = ex instanceof BadRequestException ? ex.getMessage() : "Malformed request";
     return build(HttpStatus.BAD_REQUEST, message, null);
 }
+
+// ... handlers for 413, 409, 401 and 403
 
 @ExceptionHandler(MethodArgumentNotValidException.class)
 public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException ex) {
@@ -986,7 +999,7 @@ Every feature follows the same layers. Once you know where a feature's page is, 
 | City settings | `pages/admin/CityManagePanel.jsx` | `cityApi` | `city/CityController` → `CityService` | `CityRepository`; `cities` |
 | Main admin | `pages/admin/*` | `adminApi` | `admin/AdminController` → `AdminService` | users, cities |
 | Members, blocking | `pages/admin/MembersPanel.jsx`, `MemberPage.jsx` | `adminApi` | `admin/MemberAdminController` → `MemberAdminService` | users, posts, comments |
-| Push notifications | mobile app | (mobile `notificationApi`) | `notification/NotificationController` → `DeviceService`, `NotificationService` | `DeviceTokenRepository`; `device_tokens` |
+| Push notifications | mobile app | (mobile `notificationApi`) | `notification/NotificationController` → `DeviceService` (registers phones). `NotificationService` is not called by a controller: it listens for `PostCreatedEvent` and runs the reminder job | `DeviceTokenRepository`; `device_tokens` |
 
 Three design patterns appear across features. They are worth recognising when you read the code.
 
@@ -1119,7 +1132,7 @@ Small changes are the best way to check you understand the flow. Each exercise t
    - *Website:* show it in `PostCard.jsx`.
 2. **Limit posts to 2,000 characters.**
    - *Backend:* change `@Size(max = 5000)` on `content` in `PostRequest`, and add a test that posts 2,001 characters and expects 400.
-   - *Website:* add `maxLength={2000}` to the textarea in `PostForm.jsx`, so people see the limit before the server enforces it.
+   - *Website:* change `maxLength={5000}` to `maxLength={2000}` on the textarea in `PostForm.jsx`, so people meet the limit before the server enforces it.
 3. **Add a "Lost and found" post category.**
    - Add `LOST_AND_FOUND` to `post/PostCategory.java`.
    - Add a label to `CATEGORY_LABELS` in `frontend/src/utils/format.js`, and to the same object in the mobile app's `src/utils/format.js`.
@@ -1127,6 +1140,6 @@ Small changes are the best way to check you understand the flow. Each exercise t
    - Question to answer from the code: does it appear in the feed's category filter automatically?
 4. **Let city admins pin one announcement to the top of their city's feed.**
    - A new migration adds `pinned BOOLEAN DEFAULT FALSE` to `posts`.
-   - Add a new `AccessPolicy` rule (`canManageCity`), a new endpoint, and an `order by p.pinned desc, p.createdAt desc` in `findFeed`.
+   - Add a new endpoint that checks the existing `accessPolicy.requireCityManager(actor, post.getCity().getId())`, and an `order by p.pinned desc, p.createdAt desc` in `findFeed`.
    - Add a pin button for admins on `PostCard`.
    - Write the integration test first.
